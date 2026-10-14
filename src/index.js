@@ -78,12 +78,13 @@ export default {
     }
 
     try {
-      // 1. Webhook Callback QRIS & H2H dari Qiospay
-      if (path === "/api/callback/qris" || path === "/api/callback/h2h") {
+      // 1. Webhook Callback QRIS dari Qiospay (Mutasi Masuk)
+      if (path === "/api/callback/qris") {
         if (request.method === "GET") {
           return new Response(JSON.stringify({
             status: "active",
-            message: "QiosPay Webhook Endpoint is ACTIVE and ready to receive callbacks",
+            type: "QRIS_CALLBACK",
+            message: "QRIS Webhook Endpoint is ACTIVE and ready to receive mutation callbacks",
             forwarding_to: env.DUAL_CALLBACK_URL || "Not configured"
           }), {
             status: 200,
@@ -92,6 +93,23 @@ export default {
         }
         if (request.method === "POST") {
           return await handleQrisCallback(request, env, ctx);
+        }
+      }
+
+      // 2. Webhook Callback H2H dari Qiospay (Status Transaksi Keluar/WD)
+      if (path === "/api/callback/h2h") {
+        if (request.method === "GET") {
+          return new Response(JSON.stringify({
+            status: "active",
+            type: "H2H_CALLBACK",
+            message: "H2H Webhook Endpoint is ACTIVE and ready to receive transaction status updates"
+          }), {
+            status: 200,
+            headers: { ...corsHeaders, "Content-Type": "application/json" }
+          });
+        }
+        if (request.method === "POST") {
+          return await handleH2hCallback(request, env, ctx);
         }
       }
 
@@ -303,6 +321,76 @@ async function handleQrisCallback(request, env, ctx) {
     });
   } catch (err) {
     console.error("Callback Processing Error:", err);
+    return new Response(JSON.stringify({ status: "error", message: err.message }), { status: 200 });
+  }
+}
+
+// 1.B Webhook Callback Khusus H2H (Status Hasil Transaksi Penarikan Saldo / Beli Produk)
+async function handleH2hCallback(request, env, ctx) {
+  try {
+    let payload = {};
+    const contentType = request.headers.get("content-type") || "";
+
+    if (contentType.includes("application/json")) {
+      try {
+        payload = await request.json();
+      } catch (e) {
+        const raw = await request.text();
+        try { payload = JSON.parse(raw); } catch (_) { payload = { raw }; }
+      }
+    } else {
+      const raw = await request.text();
+      try {
+        payload = JSON.parse(raw);
+      } catch (_) {
+        const params = new URLSearchParams(raw);
+        for (const [key, val] of params.entries()) {
+          payload[key] = val;
+        }
+      }
+    }
+
+    console.log("📥 Received H2H Callback:", JSON.stringify(payload));
+
+    const refId = String(payload.refid || payload.refID || payload.trxid || "");
+    const status = String(payload.status || "").toUpperCase();
+    const sn = String(payload.sn || payload.serial_number || "");
+    const msg = String(payload.message || payload.pesan || payload.keterangan || "");
+    const balance = parseInt(payload.balance || payload.saldo || 0);
+
+    const isSuccess = status.includes("SUKSES") || status.includes("SUCCESS");
+    const statusText = isSuccess ? "BERHASIL" : (status.includes("GAGAL") || status.includes("FAILED") ? "GAGAL" : status || "PROSES");
+
+    if (env.DB && refId) {
+      await env.DB.prepare(
+        "UPDATE h2h_transactions SET status = ?, message = ?, raw_response = ? WHERE ref_id = ?"
+      ).bind(statusText, `${msg} (SN: ${sn})`, JSON.stringify(payload), refId).run();
+    }
+
+    if (balance > 0 && env.DB) {
+      await env.DB.prepare(
+        "INSERT INTO config (key, value) VALUES ('qiospay_app_balance', ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value"
+      ).bind(String(balance)).run();
+    }
+
+    if (env.BOT_TOKEN && env.DB) {
+      const emoji = isSuccess ? "✅" : "⚠️";
+      const tgMsg = `${emoji} <b>LAPORAN STATUS TRANSAKSI H2H!</b>\n\n` +
+        `🆔 <b>Ref ID:</b> <code>${refId || "-"}</code>\n` +
+        `📊 <b>Status:</b> <b>${statusText}</b>\n` +
+        `🔢 <b>SN:</b> <code>${sn || "-"}</code>\n` +
+        `💬 <b>Keterangan:</b> <i>${escapeHtml(msg || "-")}</i>\n` +
+        (balance > 0 ? `💼 <b>Sisa Saldo Aplikasi:</b> <code>Rp ${balance.toLocaleString('id-ID')}</code>\n` : "");
+
+      ctx.waitUntil(broadcastToAllAdmins(env, tgMsg));
+    }
+
+    return new Response(JSON.stringify({ status: "accept", message: "H2H Callback processed successfully" }), {
+      status: 200,
+      headers: { "Content-Type": "application/json" }
+    });
+  } catch (err) {
+    console.error("H2H Callback Processing Error:", err);
     return new Response(JSON.stringify({ status: "error", message: err.message }), { status: 200 });
   }
 }
