@@ -827,10 +827,9 @@ async function executeAutoWithdrawal(env, triggerSource = "MANUAL") {
     return { success: false, message: "Kredensial PIN/Password transaksi QiosPay belum disetel di secrets." };
   }
 
-  // 5. Eksekusi H2H Trx Pembelian E-Wallet
+  // 5. Eksekusi H2H Trx Pembelian E-Wallet (Via Bridge Server IPv4 103.125.37.38)
   const refID = `WD_${Date.now()}`;
-  const h2hBaseUrl = env.H2H_URL || "https://qiospay.id/api/h2h/trx";
-  const sign = await generateOtomaXSignature(memberID, targetProduct, destNumber, refID, pin, password);
+  const h2hBaseUrl = env.H2H_URL || "https://qiosh2h.89id.eu.org/api/h2h/trx";
 
   const queryParams = new URLSearchParams({
     memberID: memberID,
@@ -838,10 +837,12 @@ async function executeAutoWithdrawal(env, triggerSource = "MANUAL") {
     dest: destNumber,
     refID: refID,
     pin: pin,
-    password: password,
-    harga_max: hargaMax.toString(),
-    sign: sign
+    password: password
   });
+
+  if (hargaMax > 0) {
+    queryParams.set("harga_max", hargaMax.toString());
+  }
 
   const fullH2hUrl = `${h2hBaseUrl}?${queryParams.toString()}`;
   console.log(`[AutoWD] Calling H2H URL: ${h2hBaseUrl}?memberID=${memberID}&product=${targetProduct}&dest=${destNumber}&refID=${refID}`);
