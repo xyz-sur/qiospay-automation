@@ -4,59 +4,64 @@
  * Multi-Admin Role Support, Dual Withdrawal Controls & In-App Auto-Fill
  */
 
-// KATALOG LENGKAP E-WALLET & PRODUK H2H QIOSPAY (TERMASUK DENOMINASI MIKRO UNTUK UJI COBA)
+// KATALOG LENGKAP E-WALLET RESMI H2H QIOSPAY (BERDASARKAN JSON RESMI BANG MANSUR: https://qiospay.id/harga_h2h/json?id=0f15813d0455b27)
 const EWALLET_CATALOG = {
   dana: {
-    name: "DANA",
+    name: "DANA VIP H2H (Admin Rp 60)",
     icon: "🔷",
     products: [
-      { code: "DP1", name: "DANA 1.000 (VIP)", price: 1060, max: 1560 },
-      { code: "DP2", name: "DANA 2.000 (VIP)", price: 2060, max: 2560 },
-      { code: "DP5", name: "DANA 5.000 (VIP)", price: 5060, max: 5560 },
-      { code: "DANA10", name: "DANA 10.000", price: 10055, max: 10555 },
-      { code: "DANA20", name: "DANA 20.000", price: 20055, max: 20555 },
-      { code: "DANA50", name: "DANA 50.000", price: 50055, max: 50555 },
-      { code: "DANA100", name: "DANA 100.000", price: 100040, max: 100540 }
-    ]
-  },
-  gopay: {
-    name: "GoPay",
-    icon: "🟢",
-    products: [
-      { code: "GOPAY10", name: "GoPay 10.000", price: 10460, max: 10960 },
-      { code: "GOPAY20", name: "GoPay 20.000", price: 20460, max: 20960 },
-      { code: "GOPAY50", name: "GoPay 50.000", price: 50460, max: 50960 },
-      { code: "GOPAY100", name: "GoPay 100.000", price: 100460, max: 100960 }
-    ]
-  },
-  ovo: {
-    name: "OVO",
-    icon: "🟣",
-    products: [
-      { code: "OVO10", name: "OVO 10.000", price: 9625, max: 10125 },
-      { code: "OVO20", name: "OVO 20.000", price: 19125, max: 19625 },
-      { code: "OVO50", name: "OVO 50.000", price: 49125, max: 49625 },
-      { code: "OVO100", name: "OVO 100.000", price: 99125, max: 99625 }
+      { code: "DP1", name: "DANA 1.000 VIP", price: 1060, max: 1560 },
+      { code: "DP2", name: "DANA 2.000 VIP", price: 2060, max: 2560 },
+      { code: "DP5", name: "DANA 5.000 VIP", price: 5060, max: 5560 },
+      { code: "DP10", name: "DANA 10.000 VIP", price: 10060, max: 10560 },
+      { code: "DP20", name: "DANA 20.000 VIP", price: 20060, max: 20560 },
+      { code: "DP50", name: "DANA 50.000 VIP", price: 50060, max: 50560 },
+      { code: "DP100", name: "DANA 100.000 VIP", price: 100060, max: 100560 }
     ]
   },
   shopee: {
-    name: "ShopeePay",
+    name: "ShopeePay H2H (Admin Cuma Rp 19)",
     icon: "🟠",
     products: [
-      { code: "QSPAY10", name: "ShopeePay 10.000", price: 10139, max: 10639 },
-      { code: "QSPAY20", name: "ShopeePay 20.000", price: 20139, max: 20639 },
-      { code: "QSPAY50", name: "ShopeePay 50.000", price: 50300, max: 50800 },
-      { code: "QSPAY100", name: "ShopeePay 100.000", price: 100300, max: 100800 }
+      { code: "SPAY10", name: "ShopeePay 10.000", price: 10019, max: 10519 },
+      { code: "SPAY15", name: "ShopeePay 15.000", price: 15019, max: 15519 },
+      { code: "SPAY20", name: "ShopeePay 20.000", price: 20019, max: 20519 },
+      { code: "SPAY25", name: "ShopeePay 25.000", price: 25019, max: 25519 },
+      { code: "SPAY50", name: "ShopeePay 50.000", price: 50019, max: 50519 },
+      { code: "SPAY100", name: "ShopeePay 100.000", price: 100019, max: 100519 }
+    ]
+  },
+  ovo: {
+    name: "OVO H2H (Admin Diskon)",
+    icon: "🟣",
+    products: [
+      { code: "OVP10", name: "OVO 10.000 (Diskon)", price: 9590, max: 10090 },
+      { code: "OVP15", name: "OVO 15.000 (Diskon)", price: 14590, max: 15090 },
+      { code: "OVP20", name: "OVO 20.000 (Diskon)", price: 19590, max: 20090 },
+      { code: "OVP50", name: "OVO 50.000 (Diskon)", price: 49590, max: 50090 },
+      { code: "OVP100", name: "OVO 100.000 (Diskon)", price: 99590, max: 100090 }
+    ]
+  },
+  gopay: {
+    name: "GoPay H2H",
+    icon: "🟢",
+    products: [
+      { code: "GOPAY10", name: "GoPay 10.000", price: 10460, max: 10960 },
+      { code: "GOPAY15", name: "GoPay 15.000", price: 15460, max: 15960 },
+      { code: "GOPAY20", name: "GoPay 20.000", price: 20460, max: 20960 },
+      { code: "GOPAY25", name: "GoPay 25.000", price: 25460, max: 25960 },
+      { code: "GOPAY50", name: "GoPay 50.000", price: 50460, max: 50960 }
     ]
   },
   linkaja: {
-    name: "LinkAja",
+    name: "LinkAja H2H (Admin Rp 110)",
     icon: "🔴",
     products: [
-      { code: "LA10", name: "LinkAja 10.000", price: 9635, max: 10135 },
-      { code: "LA20", name: "LinkAja 20.000", price: 19635, max: 20135 },
-      { code: "LA50", name: "LinkAja 50.000", price: 49635, max: 50135 },
-      { code: "LA100", name: "LinkAja 100.000", price: 99635, max: 100135 }
+      { code: "LINK10", name: "LinkAja 10.000", price: 10110, max: 10610 },
+      { code: "LINK20", name: "LinkAja 20.000", price: 20110, max: 20610 },
+      { code: "LINK25", name: "LinkAja 25.000", price: 25110, max: 25610 },
+      { code: "LINK50", name: "LinkAja 50.000", price: 50110, max: 50610 },
+      { code: "LINK100", name: "LinkAja 100.000", price: 100110, max: 100610 }
     ]
   }
 };
@@ -78,6 +83,13 @@ export default {
     }
 
     try {
+      // Debug: Cek Outbound IP Cloudflare Worker
+      if (path === "/api/debug/outbound-ip") {
+        const ipRes = await fetch("https://api.ipify.org?format=json");
+        const ipJson = await ipRes.json();
+        return new Response(JSON.stringify(ipJson), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      }
+
       // 1. Webhook Callback QRIS dari Qiospay (Mutasi Masuk)
       if (path === "/api/callback/qris") {
         if (request.method === "GET") {
