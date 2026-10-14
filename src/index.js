@@ -4,26 +4,24 @@
  * Multi-Admin Role Support, Dual Withdrawal Controls & In-App Auto-Fill
  */
 
-// KATALOG LENGKAP E-WALLET RESMI H2H QIOSPAY (BERDASARKAN JSON RESMI BANG MANSUR: https://qiospay.id/harga_h2h/json?id=0f15813d0455b27)
+// KATALOG RESMI E-WALLET H2H (1 E-WALLET = 1 GRUP PRODUK TUNGGAL & TERMURAH)
 const EWALLET_CATALOG = {
   dana: {
-    name: "DANA H2H (VIP Admin Rp 60 & Diskon)",
+    name: "DANA",
     icon: "🔷",
     products: [
-      { code: "DP1", name: "DANA 1.000 VIP", price: 1060, max: 1560 },
-      { code: "DP2", name: "DANA 2.000 VIP", price: 2060, max: 2560 },
-      { code: "DP5", name: "DANA 5.000 VIP", price: 5060, max: 5560 },
-      { code: "DNP10", name: "DANA 10.000 Diskon (Modal Rp 9.610)", price: 9610, max: 10110 },
-      { code: "DP10", name: "DANA 10.000 VIP (Modal Rp 10.060)", price: 10060, max: 10560 },
-      { code: "DNP20", name: "DANA 20.000 Diskon (Modal Rp 19.610)", price: 19610, max: 20110 },
-      { code: "DP20", name: "DANA 20.000 VIP (Modal Rp 20.060)", price: 20060, max: 20560 },
-      { code: "DNP50", name: "DANA 50.000 Diskon (Modal Rp 49.610)", price: 49610, max: 50110 },
-      { code: "DP50", name: "DANA 50.000 VIP (Modal Rp 50.060)", price: 50060, max: 50560 },
-      { code: "DP100", name: "DANA 100.000 VIP", price: 100060, max: 100560 }
+      { code: "DP1", name: "DANA 1.000", price: 1060, max: 1560 },
+      { code: "DP2", name: "DANA 2.000", price: 2060, max: 2560 },
+      { code: "DP5", name: "DANA 5.000", price: 5060, max: 5560 },
+      { code: "DP10", name: "DANA 10.000", price: 10060, max: 10560 },
+      { code: "DP20", name: "DANA 20.000", price: 20060, max: 20560 },
+      { code: "DP25", name: "DANA 25.000", price: 25060, max: 25560 },
+      { code: "DP50", name: "DANA 50.000", price: 50060, max: 50560 },
+      { code: "DP100", name: "DANA 100.000", price: 100060, max: 100560 }
     ]
   },
   shopee: {
-    name: "ShopeePay H2H (Admin Cuma Rp 19)",
+    name: "ShopeePay",
     icon: "🟠",
     products: [
       { code: "SPAY10", name: "ShopeePay 10.000", price: 10019, max: 10519 },
@@ -34,19 +32,8 @@ const EWALLET_CATALOG = {
       { code: "SPAY100", name: "ShopeePay 100.000", price: 100019, max: 100519 }
     ]
   },
-  ovo: {
-    name: "OVO H2H (Admin Diskon)",
-    icon: "🟣",
-    products: [
-      { code: "OVP10", name: "OVO 10.000 (Diskon)", price: 9590, max: 10090 },
-      { code: "OVP15", name: "OVO 15.000 (Diskon)", price: 14590, max: 15090 },
-      { code: "OVP20", name: "OVO 20.000 (Diskon)", price: 19590, max: 20090 },
-      { code: "OVP50", name: "OVO 50.000 (Diskon)", price: 49590, max: 50090 },
-      { code: "OVP100", name: "OVO 100.000 (Diskon)", price: 99590, max: 100090 }
-    ]
-  },
   gopay: {
-    name: "GoPay H2H",
+    name: "GoPay",
     icon: "🟢",
     products: [
       { code: "GOPAY10", name: "GoPay 10.000", price: 10460, max: 10960 },
@@ -56,8 +43,20 @@ const EWALLET_CATALOG = {
       { code: "GOPAY50", name: "GoPay 50.000", price: 50460, max: 50960 }
     ]
   },
+  ovo: {
+    name: "OVO",
+    icon: "🟣",
+    products: [
+      { code: "OVP10", name: "OVO 10.000", price: 9590, max: 10090 },
+      { code: "OVP15", name: "OVO 15.000", price: 14590, max: 15090 },
+      { code: "OVP20", name: "OVO 20.000", price: 19590, max: 20090 },
+      { code: "OVP25", name: "OVO 25.000", price: 24590, max: 25090 },
+      { code: "OVP50", name: "OVO 50.000", price: 49590, max: 50090 },
+      { code: "OVP100", name: "OVO 100.000", price: 99590, max: 100090 }
+    ]
+  },
   linkaja: {
-    name: "LinkAja H2H (Admin Rp 110)",
+    name: "LinkAja",
     icon: "🔴",
     products: [
       { code: "LINK10", name: "LinkAja 10.000", price: 10110, max: 10610 },
@@ -456,7 +455,21 @@ async function handleH2hCallback(request, env, ctx) {
   }
 }
 
-// Helper: Validasi Secret Key API untuk Otentikasi Bot Lain
+// Helper: Ambil & Validasi Secret Key API Tunggal (Hanya 1 Kunci yang Bisa Diubah di Bot)
+async function getSingleSecretKey(env) {
+  let activeKey = "mansur";
+  if (env.DB) {
+    const row = await env.DB.prepare("SELECT value FROM config WHERE key = 'api_secret'").first();
+    if (row && row.value) {
+      activeKey = row.value.trim();
+    } else {
+      await env.DB.prepare("INSERT INTO config (key, value) VALUES ('api_secret', 'mansur') ON CONFLICT(key) DO NOTHING").run();
+    }
+  }
+  return activeKey;
+}
+
+// Helper: Validasi Secret Key API Tunggal untuk Otentikasi Bot Lain
 async function validateApiKey(request, url, env) {
   const keyParam = (
     url.searchParams.get("key") ||
@@ -468,31 +481,21 @@ async function validateApiKey(request, url, env) {
     (request.headers.get("authorization") || "").replace(/^Bearer\s+/i, "")
   )?.trim();
 
-  // Kunci-kunci sah yang diizinkan: API_KEY resmi, Merchant Code, Member ID, atau Custom Secret di DB
-  const validKeys = new Set();
-  if (env.API_KEY) validKeys.add(env.API_KEY.trim());
-  if (env.MERCHANT_CODE) validKeys.add(env.MERCHANT_CODE.trim());
-  if (env.MEMBER_ID) validKeys.add(env.MEMBER_ID.trim());
-
-  if (env.DB) {
-    const customRow = await env.DB.prepare("SELECT value FROM config WHERE key = 'api_secret'").first();
-    if (customRow && customRow.value) {
-      validKeys.add(customRow.value.trim());
-    }
-  }
+  const singleSecretKey = await getSingleSecretKey(env);
 
   // Jika bot lain tidak mengirimkan key
   if (!keyParam) {
     return {
       valid: false,
-      message: "Secret Key / API Key wajib disertakan (?key=... atau Header X-API-Key)"
+      message: "Secret Key wajib disertakan (?key=... atau Header X-API-Key)"
     };
   }
 
-  if (!validKeys.has(keyParam)) {
+  // Hanya 1 Secret Key yang sah!
+  if (keyParam !== singleSecretKey) {
     return {
       valid: false,
-      message: "Secret Key / API Key tidak valid. Cek kunci Anda di Telegram @qiospay2bot via perintah /api"
+      message: "Secret Key salah! Cek atau ubah Secret Key Anda di bot Telegram @qiospay2bot via perintah /api atau /setkey"
     };
   }
 
@@ -689,6 +692,17 @@ async function createUniqueQrisInvoice(env, baseAmount, userId = null, chatId = 
 }
 
 async function handleGenerateQrisApi(request, url, env, corsHeaders) {
+  const auth = await validateApiKey(request, url, env);
+  if (!auth.valid) {
+    return new Response(JSON.stringify({
+      status: "error",
+      message: auth.message
+    }), {
+      status: 401,
+      headers: { ...corsHeaders, "Content-Type": "application/json" }
+    });
+  }
+
   let amount = url.searchParams.get("amount");
   const useUnique = url.searchParams.get("unique") !== "false";
   const userId = url.searchParams.get("user_id");
@@ -1159,46 +1173,44 @@ async function handleTelegramWebhook(request, env, ctx) {
   // 2. Command /start & /help
   if (text === "/start" || text === "/help") {
     const roleBadge = admin.role === "owner" ? "👑 OWNER" : "🛡️ ADMIN";
-    const welcome = `🤖 <b>QIOSPAY QRIS & AUTO-WD ENGINE</b>\n` +
-      `Status Akun: <b>${roleBadge}</b> (<code>${user.id}</code>)\n\n` +
-      `<b>⚡ Menu Cepat Penarikan Saldo:</b>\n` +
-      `1️⃣ <b>Tarik QRIS ➔ QiosPay:</b> Memindahkan dana terkumpul dari QRIS ke saldo aplikasi.\n` +
-      `2️⃣ <b>Tarik QiosPay ➔ Wallet:</b> Menarik saldo aplikasi ke DANA/E-Wallet via H2H.\n\n` +
-      `<b>📱 Perintah Operasional:</b>\n` +
+    const welcome = `🤖 <b>QIOSPAY AUTOMATION & DUAL ENGINE</b>\n` +
+      `Status: <b>${roleBadge}</b> (<code>${user.id}</code>)\n\n` +
+      `<b>⚡ Menu Operasional:</b>\n` +
+      `1️⃣ <b>Tarik QRIS ➔ QiosPay:</b> Pindahkan saldo mutasi QRIS ke akun QiosPay.\n` +
+      `2️⃣ <b>Tarik ke E-Wallet:</b> Eksekusi saldo QiosPay ke E-Wallet penampung.\n\n` +
+      `<b>📱 Perintah Cepat:</b>\n` +
       `• <code>/status</code> — Cek saldo (QRIS & Aplikasi Qiospay) & status WD\n` +
-      `• <code>/setwallet</code> — Atur E-Wallet & Nomor Penampung (Mode Inline)\n` +
-      `• <code>/tarikqris</code> — Tarik & sinkronkan saldo QRIS ke QiosPay\n` +
-      `• <code>/tarikwallet</code> — Tarik saldo QiosPay ke DANA penampung\n` +
-      `• <code>/mutasi [limit]</code> — Lihat daftar mutasi QRIS masuk terkini\n` +
-      `• <code>/h2h [limit]</code> — Lihat riwayat eksekusi H2H ke E-Wallet\n` +
-      `• <code>/qris [nominal]</code> — Generate QRIS dinamis langsung\n` +
-      `• <code>/api</code> — Panduan Private API & Secret Key untuk bot lain\n\n` +
-      `<b>👥 Manajemen Administrator:</b>\n` +
-      `• <code>/addadmin &lt;id&gt; [username]</code> — Tambah admin baru\n` +
-      `• <code>/deladmin &lt;id&gt;</code> — Hapus admin\n` +
-      `• <code>/listadmin</code> — Lihat semua admin terdaftar`;
+      `• <code>/tarikqris</code> — Tarik saldo QRIS ke QiosPay\n` +
+      `• <code>/wd</code> — Tarik saldo QiosPay ke E-Wallet\n` +
+      `• <code>/setnomor [no]</code> — Atur nomor HP E-Wallet penampung\n` +
+      `• <code>/setproduk</code> — Pilih produk & nominal E-Wallet\n` +
+      `• <code>/qris [nominal]</code> — Buat QRIS Dinamis (Kode Unik 3 Menit)\n` +
+      `• <code>/api</code> — Secret Key & panduan integrasi bot lain\n` +
+      `• <code>/setkey [kunci]</code> — Ganti Secret Key API tunggal\n\n` +
+      `<i>Gunakan tombol interaktif di bawah untuk navigasi cepat:</i>`;
 
     const dashUrl = `https://qiospay-automation.mansyurj168.workers.dev/?uid=${user.id}`;
     const inlineKeyboard = {
       inline_keyboard: [
         [
-          { text: "📊 Cek Status & Dual Saldo", callback_data: "cb:status" }
+          { text: "📊 Cek Dual Saldo", callback_data: "cb:status" },
+          { text: "⚡ Tarik ke E-Wallet", callback_data: "cb:prompt_tarik_wallet" }
         ],
         [
           { text: "🔄 Tarik QRIS ➔ QiosPay", callback_data: "cb:tarik_qris_settle" },
-          { text: "⚡ Tarik QiosPay ➔ Wallet", callback_data: "cb:prompt_tarik_wallet" }
+          { text: "💳 Buat QRIS Dinamis", callback_data: "cb:qris_menu" }
         ],
         [
-          { text: "⚙️ Set E-Wallet & Produk", callback_data: "ew:menu" },
-          { text: "💳 QRIS Dinamis", callback_data: "cb:qris_menu" }
+          { text: "📱 Set Nomor Tujuan", callback_data: "ew:input_phone" },
+          { text: "⚙️ Pilih Produk E-Wallet", callback_data: "ew:menu" }
         ],
         [
           { text: "📥 Mutasi QRIS", callback_data: "cb:mutasi" },
-          { text: "📤 Riwayat H2H", callback_data: "cb:h2h" }
+          { text: "📤 Riwayat WD", callback_data: "cb:h2h" }
         ],
         [
-          { text: "🔌 API untuk Bot Lain", callback_data: "cb:api_info" },
-          { text: "👥 Daftar Admin", callback_data: "cb:listadmin" }
+          { text: "🔑 Secret Key & API", callback_data: "cb:api_info" },
+          { text: "👥 Admin", callback_data: "cb:listadmin" }
         ],
         [
           { text: "🌐 Web Dashboard", url: dashUrl }
@@ -1216,56 +1228,76 @@ async function handleTelegramWebhook(request, env, ctx) {
     return new Response("OK");
   }
 
-  // 4. Command /setwallet & /setdana (INLINE MODE + INPUT PHONE)
-  if (text.startsWith("/setwallet") || text.startsWith("/setdana")) {
-    const rawParam = text.replace(/^\/(?:setwallet|setdana)/, "").trim();
+  // 4. Command /setnomor (Alias: /setwallet, /setdana)
+  if (text.startsWith("/setnomor") || text.startsWith("/setwallet") || text.startsWith("/setdana")) {
+    const rawParam = text.replace(/^\/(?:setnomor|setwallet|setdana)/, "").trim();
 
     if (rawParam) {
       const cleanPhone = rawParam.replace(/[^0-9]/g, "");
       if (!/^08[0-9]{8,12}$/.test(cleanPhone)) {
-        await sendTelegramMessage(env.BOT_TOKEN, chatId, "⚠️ <b>Nomor tidak valid!</b> Gunakan format angka Indonesia yang benar (contoh: <code>/setwallet 083127060539</code>).");
+        const errKb = {
+          inline_keyboard: [[{ text: "🔙 Coba Lagi", callback_data: "ew:input_phone" }]]
+        };
+        await sendTelegramMessage(env.BOT_TOKEN, chatId, "⚠️ <b>Nomor tidak valid!</b>\nGunakan nomor HP Indonesia aktif (contoh: <code>/setnomor 083127060539</code>).", errKb);
         return new Response("OK");
       }
 
       await env.DB.prepare("UPDATE config SET value = ? WHERE key = 'dana_dest'").bind(cleanPhone).run();
 
-      const confirmMsg = `✅ <b>Nomor E-Wallet Penampung Diperbarui!</b>\n\n` +
-        `📱 <b>Nomor Tujuan:</b> <code>${cleanPhone}</code>\n\n` +
-        `Silakan pilih produk E-Wallet dan nominal target penarikan di bawah ini:`;
+      const confirmMsg = `✅ <b>Nomor Tujuan E-Wallet Diperbarui!</b>\n\n` +
+        `📱 <b>Nomor Aktif:</b> <code>${cleanPhone}</code>\n\n` +
+        `Silakan pilih produk E-Wallet penampung di bawah ini:`;
 
       await sendTelegramMessage(env.BOT_TOKEN, chatId, confirmMsg, renderWalletCategoryKeyboard());
       return new Response("OK");
     }
 
-    const promptMsg = `⚙️ <b>PENGATURAN E-WALLET PENAMPUNG (INLINE MODE)</b>\n\n` +
-      `Pilih jenis E-Wallet yang ingin Anda jadikan tujuan pencairan saldo otomatis:`;
+    const promptMsg = `📱 <b>ATUR NOMOR HP TUJUAN E-WALLET</b>\n\n` +
+      `Ketik nomor tujuan penarikan saldo Anda di chat:\n` +
+      `👉 <code>/setnomor 083127060539</code> 👈\n\n` +
+      `<i>Atau pilih produk nominal penarikan di bawah ini:</i>`;
 
+    const kb = {
+      inline_keyboard: [
+        [{ text: "⚙️ Pilih Produk E-Wallet", callback_data: "ew:menu" }],
+        [{ text: "🔙 Menu Utama", callback_data: "cb:menu_utama" }]
+      ]
+    };
+    await sendTelegramMessage(env.BOT_TOKEN, chatId, promptMsg, kb);
+    return new Response("OK");
+  }
+
+  // 4.B Command /setproduk (Menu Pemilihan Produk E-Wallet)
+  if (text === "/setproduk" || text === "/produk") {
+    const promptMsg = `⚙️ <b>PILIH PRODUK & NOMINAL PENARIKAN E-WALLET</b>\n\n` +
+      `<i>Pilih provider E-Wallet penampung dengan biaya modal resmi paling murah:</i>`;
     await sendTelegramMessage(env.BOT_TOKEN, chatId, promptMsg, renderWalletCategoryKeyboard());
     return new Response("OK");
   }
 
   // 5. Command /tarikqris (Tarik/Settle Saldo QRIS ke QiosPay)
   if (text === "/tarikqris") {
-    await sendTelegramMessage(env.BOT_TOKEN, chatId, "⏳ Sedang menyinkronkan & menarik saldo mutasi QRIS ke saldo aplikasi QiosPay...");
+    await sendTelegramMessage(env.BOT_TOKEN, chatId, "⏳ Sedang menyinkronkan & menarik saldo mutasi QRIS ke akun QiosPay...");
     const syncRes = await syncQrisBalance(env);
-    const msg = `✅ <b>PENARIKAN SALDO QRIS ➔ QIOSPAY BERHASIL!</b>\n\n` +
-      `💳 <b>Saldo QRIS Terkumpul:</b> <code>Rp ${syncRes.qrisBalance.toLocaleString('id-ID')}</code>\n` +
-      `💼 <b>Saldo Aplikasi QiosPay:</b> <code>Rp ${syncRes.qrisBalance.toLocaleString('id-ID')}</code>\n` +
-      `📥 <b>Total Mutasi Diperbarui:</b> <code>${syncRes.newMutationsCount} transaksi</code>\n\n` +
-      `<i>Saldo kini siap ditarik ke E-Wallet/DANA penampung Anda!</i>`;
+    const msg = `✅ <b>PENARIKAN SALDO QRIS ➔ QIOSPAY SELESAI!</b>\n\n` +
+      `💳 <b>Saldo QRIS:</b> <code>Rp ${syncRes.qrisBalance.toLocaleString('id-ID')}</code>\n` +
+      `💼 <b>Saldo Akun QiosPay:</b> <code>Rp ${syncRes.qrisBalance.toLocaleString('id-ID')}</code>\n` +
+      `📥 <b>Total Mutasi Masuk:</b> <code>${syncRes.newMutationsCount} transaksi</code>\n\n` +
+      `<i>Saldo kini siap ditarik ke E-Wallet penampung Anda!</i>`;
 
     const kb = {
       inline_keyboard: [
         [{ text: "⚡ Tarik ke E-Wallet Sekarang", callback_data: "cb:prompt_tarik_wallet" }],
-        [{ text: "📊 Cek Status", callback_data: "cb:status" }]
+        [{ text: "📊 Cek Status", callback_data: "cb:status" }],
+        [{ text: "🔙 Menu Utama", callback_data: "cb:menu_utama" }]
       ]
     };
     await sendTelegramMessage(env.BOT_TOKEN, chatId, msg, kb);
     return new Response("OK");
   }
 
-  // 6. Command /tarikwallet atau /tarik (Prompt Konfirmasi Logika YES / NO)
-  if (text === "/tarikwallet" || text === "/tarik") {
+  // 6. Command /tarikwallet, /wd, /tarik (Konfirmasi Eksekusi ke E-Wallet)
+  if (text === "/tarikwallet" || text === "/wd" || text === "/tarik") {
     await renderWithdrawConfirmPrompt(env, chatId);
     return new Response("OK");
   }
@@ -1472,46 +1504,66 @@ async function handleTelegramWebhook(request, env, ctx) {
     return new Response("OK");
   }
 
-  // 14. Command /api & /apikey (Panduan Private API & Secret Key untuk Bot Lain)
+  // 14. Command /api & /apikey (Panduan Private API & Secret Key Tunggal untuk Bot Lain)
   if (text === "/api" || text === "/apikey") {
-    let customKey = "mansur";
-    if (env.DB) {
-      const row = await env.DB.prepare("SELECT value FROM config WHERE key = 'api_secret'").first();
-      if (row && row.value) customKey = row.value;
-    }
-
+    const singleKey = await getSingleSecretKey(env);
     const host = "https://qiospay-automation.mansyurj168.workers.dev";
     const apiMsg = `🌐 <b>PANDUAN PRIVATE API QRIS (UNTUK BOT LAIN)</b>\n\n` +
-      `⚡ <i>API ini berjalan di Cloudflare Edge D1, merespon dalam 10-30ms, bebas limit, dan aman dicek detikan oleh bot lain.</i>\n\n` +
-      `🔑 <b>Pilihan Secret Key Anda:</b>\n` +
-      `• Kunci Pendek: <code>${customKey}</code>\n` +
-      `• Merchant Code: <code>${env.MERCHANT_CODE || "QP038266"}</code>\n` +
-      `• User ID: <code>${env.MEMBER_ID || "mansur"}</code>\n\n` +
-      `🔗 <b>Contoh Pemanggilan URL (GET):</b>\n\n` +
+      `⚡ <i>Berjalan di Cloudflare Edge D1, respon kilat (10-30ms), bebas limit, dan aman dicek detikan.</i>\n\n` +
+      `🔑 <b>SECRET KEY TUNGGAL AKTIF:</b>\n` +
+      `👉 <code>${singleKey}</code> 👈\n\n` +
+      `<i>(Hanya 1 kunci ini yang sah untuk otentikasi bot lain. Bisa diubah kapan saja)</i>\n\n` +
+      `🔗 <b>Format URL Pemanggilan (GET):</b>\n\n` +
       `1️⃣ <b>Cek Mutasi per Nominal:</b>\n` +
-      `<code>${host}/api/qris/mutasi?key=${customKey}&nominal=10231</code>\n\n` +
+      `<code>${host}/api/qris/mutasi?key=${singleKey}&nominal=10231</code>\n\n` +
       `2️⃣ <b>Cek Mutasi per Ref ID:</b>\n` +
-      `<code>${host}/api/qris/mutasi?key=${customKey}&refid=231695940439</code>\n\n` +
+      `<code>${host}/api/qris/mutasi?key=${singleKey}&refid=231695940439</code>\n\n` +
       `3️⃣ <b>Cek Tagihan Dinamis Kode Unik:</b>\n` +
-      `<code>${host}/api/qris/check?key=${customKey}&trx_id=INV12345</code>\n\n` +
+      `<code>${host}/api/qris/check?key=${singleKey}&trx_id=INV12345</code>\n\n` +
       `4️⃣ <b>Generate QRIS Dinamis via URL:</b>\n` +
-      `<code>${host}/api/qris/generate?key=${customKey}&amount=10000</code>\n\n` +
-      `💡 <i>Gunakan perintah <code>/setkey &lt;kunci_baru&gt;</code> untuk mengganti secret key sesuai keinginan Anda.</i>`;
+      `<code>${host}/api/qris/generate?key=${singleKey}&amount=10000</code>\n\n` +
+      `💡 <i>Ketik <code>/setkey &lt;kunci_baru&gt;</code> di chat untuk mengganti secret key.</i>`;
 
-    await sendTelegramMessage(env.BOT_TOKEN, chatId, apiMsg);
+    const kb = {
+      inline_keyboard: [
+        [
+          { text: "🔑 Cara Ganti Secret Key", callback_data: "cb:prompt_setkey" },
+          { text: "🔄 Refresh Key", callback_data: "cb:api_info" }
+        ],
+        [
+          { text: "📥 Cek Mutasi QRIS", callback_data: "cb:mutasi" },
+          { text: "💳 Buat QRIS Dinamis", callback_data: "cb:qris_menu" }
+        ],
+        [
+          { text: "🔙 Menu Utama", callback_data: "cb:menu_utama" }
+        ]
+      ]
+    };
+
+    await sendTelegramMessage(env.BOT_TOKEN, chatId, apiMsg, kb);
     return new Response("OK");
   }
 
-  // 15. Command /setkey <kunci_baru> (Ubah Secret Key untuk Bot Lain)
+  // 15. Command /setkey <kunci_baru> (Ubah Secret Key Tunggal untuk Bot Lain)
   if (text.startsWith("/setkey")) {
     const newKey = text.replace("/setkey", "").trim();
     if (!newKey) {
-      await sendTelegramMessage(env.BOT_TOKEN, chatId, "⚠️ Format: <code>/setkey rahasia123</code>");
+      const errKb = {
+        inline_keyboard: [[{ text: "🔙 Kembali ke API", callback_data: "cb:api_info" }]]
+      };
+      await sendTelegramMessage(env.BOT_TOKEN, chatId, "⚠️ Format: <code>/setkey rahasia123</code>", errKb);
       return new Response("OK");
     }
     await env.DB.prepare("INSERT INTO config (key, value) VALUES ('api_secret', ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value")
       .bind(newKey).run();
-    await sendTelegramMessage(env.BOT_TOKEN, chatId, `✅ <b>Secret Key API Diperbarui!</b>\n\nSecret key baru: <code>${newKey}</code>\n\n<i>Kunci ini sekarang langsung aktif untuk otentikasi bot lain.</i>`);
+
+    const okKb = {
+      inline_keyboard: [
+        [{ text: "🌐 Lihat Panduan API Baru", callback_data: "cb:api_info" }],
+        [{ text: "🔙 Menu Utama", callback_data: "cb:menu_utama" }]
+      ]
+    };
+    await sendTelegramMessage(env.BOT_TOKEN, chatId, `✅ <b>Secret Key API Diperbarui!</b>\n\nSecret key tunggal aktif: <code>${newKey}</code>\n\n<i>Kunci lama otomatis tidak berlaku dan kunci baru ini langsung aktif 100%.</i>`, okKb);
     return new Response("OK");
   }
 
@@ -1534,31 +1586,39 @@ async function renderStatusMessage(env, chatId, userId, messageId = null) {
   const qrisBalance = parseInt(cfg.qris_balance || lastMut?.balance || 0);
   const appBalance = parseInt(cfg.qiospay_app_balance || 0);
 
-  const statusMsg = `📊 <b>INFORMASI STATUS & DUAL SALDO:</b>\n\n` +
-    `💼 <b>Saldo Aplikasi QiosPay:</b> <code>Rp ${appBalance.toLocaleString('id-ID')}</code>\n` +
+  const statusMsg = `📊 <b>STATUS AKUN & DUAL SALDO:</b>\n\n` +
+    `💼 <b>Saldo Akun QiosPay:</b> <code>Rp ${appBalance.toLocaleString('id-ID')}</code>\n` +
     `💳 <b>Saldo Akun QRIS:</b> <code>Rp ${qrisBalance.toLocaleString('id-ID')}</code>\n` +
-    `📈 <b>Dana QRIS Masuk Hari Ini:</b> <code>Rp ${(todayTotal?.total || 0).toLocaleString('id-ID')}</code>\n` +
+    `📈 <b>QRIS Masuk Hari Ini:</b> <code>Rp ${(todayTotal?.total || 0).toLocaleString('id-ID')}</code>\n` +
     `────────────────────────\n` +
     `📱 <b>Nomor Penampung:</b> <code>${cfg.dana_dest || "083127060539"}</code>\n` +
     `📦 <b>Target Produk:</b> <code>${cfg.target_product || "DP1"}</code>\n` +
-    `💵 <b>Harga Maks Proteksi:</b> <code>Rp ${parseInt(cfg.harga_max || 1560).toLocaleString('id-ID')}</code>\n` +
-    `⚙️ <b>Auto-WD (12 Jam):</b> <b>${cfg.auto_wd_enabled === "1" ? "AKTIF ✅" : "NONAKTIF ❌"}</b>\n` +
-    `🕒 <b>Status Terakhir:</b> <code>${cfg.last_wd_status || "-"}</code>\n` +
+    `💵 <b>Batas Harga Maks:</b> <code>Rp ${parseInt(cfg.harga_max || 1560).toLocaleString('id-ID')}</code>\n` +
+    `⚙️ <b>Auto-WD ke E-Wallet:</b> <b>${cfg.auto_wd_enabled === "1" ? "AKTIF ✅" : "NONAKTIF ❌"}</b>\n` +
+    `🕒 <b>Status WD Terakhir:</b> <code>${cfg.last_wd_status || "-"}</code>\n` +
     `✅ <b>Total WD Berhasil:</b> <code>${totalWd?.count || 0} kali</code>`;
 
   const dashUrl = `https://qiospay-automation.mansyurj168.workers.dev/?uid=${userId}`;
   const kb = {
     inline_keyboard: [
       [
-        { text: "🔄 Tarik QRIS ➔ QiosPay", callback_data: "cb:tarik_qris_settle" },
-        { text: "⚡ Tarik QiosPay ➔ Wallet", callback_data: "cb:prompt_tarik_wallet" }
+        { text: "⚡ Tarik ke E-Wallet", callback_data: "cb:prompt_tarik_wallet" },
+        { text: "🔄 Tarik QRIS ➔ QiosPay", callback_data: "cb:tarik_qris_settle" }
       ],
       [
-        { text: "⚙️ Ubah E-Wallet", callback_data: "ew:menu" },
-        { text: "🔄 Refresh Status", callback_data: "cb:status" }
+        { text: "📱 Set Nomor Tujuan", callback_data: "ew:input_phone" },
+        { text: "⚙️ Pilih Produk E-Wallet", callback_data: "ew:menu" }
       ],
       [
-        { text: "🌐 Web Dashboard", url: dashUrl }
+        { text: "🔄 Refresh Status", callback_data: "cb:status" },
+        { text: "💳 Buat QRIS", callback_data: "cb:qris_menu" }
+      ],
+      [
+        { text: "🔑 Secret Key & API", callback_data: "cb:api_info" },
+        { text: "🔙 Menu Utama", callback_data: "cb:menu_utama" }
+      ],
+      [
+        { text: "🌐 Buka Web Dashboard", url: dashUrl }
       ]
     ]
   };
@@ -1609,15 +1669,15 @@ function renderWalletCategoryKeyboard() {
     inline_keyboard: [
       [
         { text: "🔷 DANA", callback_data: "ew:cat:dana" },
-        { text: "🟢 GoPay", callback_data: "ew:cat:gopay" }
-      ],
-      [
-        { text: "🟣 OVO", callback_data: "ew:cat:ovo" },
         { text: "🟠 ShopeePay", callback_data: "ew:cat:shopee" }
       ],
       [
+        { text: "🟢 GoPay", callback_data: "ew:cat:gopay" },
+        { text: "🟣 OVO", callback_data: "ew:cat:ovo" }
+      ],
+      [
         { text: "🔴 LinkAja", callback_data: "ew:cat:linkaja" },
-        { text: "✏️ Input No HP", callback_data: "ew:input_phone" }
+        { text: "📱 Set Nomor Tujuan", callback_data: "ew:input_phone" }
       ],
       [
         { text: "🔙 Kembali ke Menu Utama", callback_data: "cb:menu_utama" }
@@ -1661,30 +1721,34 @@ async function handleCallbackQuery(cb, env) {
   // 1. Menu Utama Callback
   if (data === "cb:menu_utama") {
     const roleBadge = admin.role === "owner" ? "👑 OWNER" : "🛡️ ADMIN";
-    const welcome = `🤖 <b>QIOSPAY QRIS & AUTO-WD ENGINE</b>\n` +
-      `Status Akun: <b>${roleBadge}</b> (<code>${user.id}</code>)\n\n` +
+    const welcome = `🤖 <b>QIOSPAY AUTOMATION & DUAL ENGINE</b>\n` +
+      `Status: <b>${roleBadge}</b> (<code>${user.id}</code>)\n\n` +
       `Silakan pilih menu operasional di bawah ini:`;
 
     const dashUrl = `https://qiospay-automation.mansyurj168.workers.dev/?uid=${user.id}`;
     const inlineKeyboard = {
       inline_keyboard: [
         [
-          { text: "📊 Cek Status & Dual Saldo", callback_data: "cb:status" }
+          { text: "📊 Cek Dual Saldo", callback_data: "cb:status" },
+          { text: "⚡ Tarik ke E-Wallet", callback_data: "cb:prompt_tarik_wallet" }
         ],
         [
           { text: "🔄 Tarik QRIS ➔ QiosPay", callback_data: "cb:tarik_qris_settle" },
-          { text: "⚡ Tarik QiosPay ➔ Wallet", callback_data: "cb:prompt_tarik_wallet" }
+          { text: "💳 Buat QRIS Dinamis", callback_data: "cb:qris_menu" }
         ],
         [
-          { text: "⚙️ Set E-Wallet & Produk", callback_data: "ew:menu" },
-          { text: "💳 QRIS Dinamis", callback_data: "cb:qris_menu" }
+          { text: "📱 Set Nomor Tujuan", callback_data: "ew:input_phone" },
+          { text: "⚙️ Pilih Produk E-Wallet", callback_data: "ew:menu" }
         ],
         [
           { text: "📥 Mutasi QRIS", callback_data: "cb:mutasi" },
-          { text: "📤 Riwayat H2H", callback_data: "cb:h2h" }
+          { text: "📤 Riwayat WD", callback_data: "cb:h2h" }
         ],
         [
-          { text: "👥 Daftar Admin", callback_data: "cb:listadmin" },
+          { text: "🔑 Secret Key & API", callback_data: "cb:api_info" },
+          { text: "👥 Admin", callback_data: "cb:listadmin" }
+        ],
+        [
           { text: "🌐 Web Dashboard", url: dashUrl }
         ]
       ]
@@ -1823,13 +1887,39 @@ async function handleCallbackQuery(cb, env) {
 
   // 9. Panduan Input Nomor HP
   else if (data === "ew:input_phone") {
-    const hintMsg = `📱 <b>CARA MENGUBAH NOMOR E-WALLET PENAMPUNG:</b>\n\n` +
+    const hintMsg = `📱 <b>CARA MENGUBAH NOMOR TUJUAN E-WALLET:</b>\n\n` +
       `Ketik perintah di chat seperti contoh berikut:\n` +
-      `👉 <code>/setwallet 083127060539</code> 👈\n\n` +
+      `👉 <code>/setnomor 083127060539</code> 👈\n\n` +
       `<i>Sistem akan otomatis memvalidasi nomor telepon dan menyimpannya ke database.</i>`;
 
     const kb = {
-      inline_keyboard: [[{ text: "🔙 Kembali", callback_data: "ew:menu" }]]
+      inline_keyboard: [
+        [{ text: "⚙️ Pilih Produk E-Wallet", callback_data: "ew:menu" }],
+        [{ text: "🔙 Kembali ke Menu Utama", callback_data: "cb:menu_utama" }]
+      ]
+    };
+
+    if (messageId) {
+      await editTelegramMessage(env.BOT_TOKEN, chatId, messageId, hintMsg, kb);
+    } else {
+      await sendTelegramMessage(env.BOT_TOKEN, chatId, hintMsg, kb);
+    }
+  }
+
+  // 9.B Panduan Ubah Secret Key API Tunggal
+  else if (data === "cb:prompt_setkey") {
+    const singleKey = await getSingleSecretKey(env);
+    const hintMsg = `🔑 <b>CARA MENGGANTI SECRET KEY API TUNGGAL:</b>\n\n` +
+      `Secret Key Aktif Saat Ini: <code>${singleKey}</code>\n\n` +
+      `Ketik perintah di chat untuk mengganti kunci baru:\n` +
+      `👉 <code>/setkey rahasia123</code> 👈\n\n` +
+      `<i>Setelah dikirim, bot lain yang menggunakan kunci lama akan otomatis ditolak dan wajib menggunakan kunci baru.</i>`;
+
+    const kb = {
+      inline_keyboard: [
+        [{ text: "🌐 Kembali ke Info API", callback_data: "cb:api_info" }],
+        [{ text: "🔙 Menu Utama", callback_data: "cb:menu_utama" }]
+      ]
     };
 
     if (messageId) {
@@ -1846,47 +1936,65 @@ async function handleCallbackQuery(cb, env) {
     (results || []).forEach((m, i) => {
       text += `${i + 1}. Rp ${m.amount.toLocaleString('id-ID')} | <code>${m.buyer_name}</code>\n`;
     });
-    await sendTelegramMessage(env.BOT_TOKEN, chatId, text || "Belum ada mutasi tersimpan.");
+    const kb = {
+      inline_keyboard: [
+        [{ text: "🔄 Refresh Mutasi", callback_data: "cb:mutasi" }],
+        [{ text: "🔙 Menu Utama", callback_data: "cb:menu_utama" }]
+      ]
+    };
+    await sendTelegramMessage(env.BOT_TOKEN, chatId, text || "Belum ada mutasi tersimpan.", kb);
   }
 
   // 11. Riwayat H2H
   else if (data === "cb:h2h") {
     const { results } = await env.DB.prepare("SELECT product, dest, status FROM h2h_transactions ORDER BY id DESC LIMIT 5").all();
-    let text = "📤 <b>5 Transaksi H2H Terakhir:</b>\n\n";
+    let text = "📤 <b>5 Transaksi WD E-Wallet Terakhir:</b>\n\n";
     (results || []).forEach((h, i) => {
       text += `${i + 1}. ${h.product} -> <code>${h.dest}</code> [<b>${h.status}</b>]\n`;
     });
-    await sendTelegramMessage(env.BOT_TOKEN, chatId, text || "Belum ada transaksi H2H.");
+    const kb = {
+      inline_keyboard: [
+        [{ text: "🔄 Refresh Riwayat", callback_data: "cb:h2h" }],
+        [{ text: "🔙 Menu Utama", callback_data: "cb:menu_utama" }]
+      ]
+    };
+    await sendTelegramMessage(env.BOT_TOKEN, chatId, text || "Belum ada transaksi H2H.", kb);
   }
 
   // 12.A Info API untuk Bot Lain
   else if (data === "cb:api_info") {
-    let customKey = "mansur";
-    if (env.DB) {
-      const row = await env.DB.prepare("SELECT value FROM config WHERE key = 'api_secret'").first();
-      if (row && row.value) customKey = row.value;
-    }
-
+    const singleKey = await getSingleSecretKey(env);
     const host = "https://qiospay-automation.mansyurj168.workers.dev";
     const apiMsg = `🌐 <b>PANDUAN PRIVATE API QRIS (UNTUK BOT LAIN)</b>\n\n` +
-      `⚡ <i>API ini berjalan di Cloudflare Edge D1, merespon dalam 10-30ms, bebas limit, dan aman dicek detikan oleh bot lain.</i>\n\n` +
-      `🔑 <b>Pilihan Secret Key Anda:</b>\n` +
-      `• Kunci Pendek: <code>${customKey}</code>\n` +
-      `• Merchant Code: <code>${env.MERCHANT_CODE || "QP038266"}</code>\n` +
-      `• User ID: <code>${env.MEMBER_ID || "mansur"}</code>\n\n` +
-      `🔗 <b>Contoh Pemanggilan URL (GET):</b>\n\n` +
+      `⚡ <i>Berjalan di Cloudflare Edge D1, respon kilat (10-30ms), bebas limit, dan aman dicek detikan.</i>\n\n` +
+      `🔑 <b>SECRET KEY TUNGGAL AKTIF:</b>\n` +
+      `👉 <code>${singleKey}</code> 👈\n\n` +
+      `<i>(Hanya 1 kunci ini yang sah untuk otentikasi bot lain. Bisa diubah kapan saja)</i>\n\n` +
+      `🔗 <b>Format URL Pemanggilan (GET):</b>\n\n` +
       `1️⃣ <b>Cek Mutasi per Nominal:</b>\n` +
-      `<code>${host}/api/qris/mutasi?key=${customKey}&nominal=10231</code>\n\n` +
+      `<code>${host}/api/qris/mutasi?key=${singleKey}&nominal=10231</code>\n\n` +
       `2️⃣ <b>Cek Mutasi per Ref ID:</b>\n` +
-      `<code>${host}/api/qris/mutasi?key=${customKey}&refid=231695940439</code>\n\n` +
+      `<code>${host}/api/qris/mutasi?key=${singleKey}&refid=231695940439</code>\n\n` +
       `3️⃣ <b>Cek Tagihan Dinamis Kode Unik:</b>\n` +
-      `<code>${host}/api/qris/check?key=${customKey}&trx_id=INV12345</code>\n\n` +
+      `<code>${host}/api/qris/check?key=${singleKey}&trx_id=INV12345</code>\n\n` +
       `4️⃣ <b>Generate QRIS Dinamis via URL:</b>\n` +
-      `<code>${host}/api/qris/generate?key=${customKey}&amount=10000</code>\n\n` +
-      `💡 <i>Gunakan perintah <code>/setkey &lt;kunci_baru&gt;</code> di chat untuk mengganti secret key.</i>`;
+      `<code>${host}/api/qris/generate?key=${singleKey}&amount=10000</code>\n\n` +
+      `💡 <i>Ketik <code>/setkey &lt;kunci_baru&gt;</code> di chat untuk mengganti secret key.</i>`;
 
     const kb = {
-      inline_keyboard: [[{ text: "🔙 Menu Utama", callback_data: "cb:menu_utama" }]]
+      inline_keyboard: [
+        [
+          { text: "🔑 Cara Ganti Secret Key", callback_data: "cb:prompt_setkey" },
+          { text: "🔄 Refresh Key", callback_data: "cb:api_info" }
+        ],
+        [
+          { text: "📥 Cek Mutasi QRIS", callback_data: "cb:mutasi" },
+          { text: "💳 Buat QRIS Dinamis", callback_data: "cb:qris_menu" }
+        ],
+        [
+          { text: "🔙 Menu Utama", callback_data: "cb:menu_utama" }
+        ]
+      ]
     };
 
     if (messageId) {
