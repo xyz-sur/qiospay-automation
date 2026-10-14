@@ -128,19 +128,19 @@ export default {
         }
       }
 
-      // 2. Private Mutasi API (Bebas limit untuk bot lain)
-      if (path === "/api/qris/mutasi" && request.method === "GET") {
-        return await handleGetMutasi(url, env, corsHeaders);
+      // 2. Private Mutasi API (Bebas limit untuk bot lain & detikan)
+      if ((path === "/api/qris/mutasi" || path === "/api/mutasi" || path === "/api/qris/cek") && request.method === "GET") {
+        return await handleGetMutasi(request, url, env, corsHeaders);
       }
 
       // 3. Dynamic QRIS Generator API (Dengan Kode Unik & Validasi 3 Menit + 1 Menit Grace Period)
-      if (path === "/api/qris/generate" && (request.method === "GET" || request.method === "POST")) {
+      if ((path === "/api/qris/generate" || path === "/api/qris/create") && (request.method === "GET" || request.method === "POST")) {
         return await handleGenerateQrisApi(request, url, env, corsHeaders);
       }
 
       // 3.B Check Status Tagihan QRIS Dinamis API
-      if (path === "/api/qris/check" && request.method === "GET") {
-        return await handleCheckQrisInvoiceApi(url, env, corsHeaders);
+      if ((path === "/api/qris/check" || path === "/api/qris/invoice" || path === "/api/qris/status") && request.method === "GET") {
+        return await handleCheckQrisInvoiceApi(request, url, env, corsHeaders);
       }
 
       // 4. Webhook Bot Telegram (@qiospay2bot)
@@ -456,14 +456,69 @@ async function handleH2hCallback(request, env, ctx) {
   }
 }
 
+// Helper: Validasi Secret Key API untuk Otentikasi Bot Lain
+async function validateApiKey(request, url, env) {
+  const keyParam = (
+    url.searchParams.get("key") ||
+    url.searchParams.get("api_key") ||
+    url.searchParams.get("secret") ||
+    url.searchParams.get("secret_key") ||
+    url.searchParams.get("token") ||
+    request.headers.get("x-api-key") ||
+    (request.headers.get("authorization") || "").replace(/^Bearer\s+/i, "")
+  )?.trim();
+
+  // Kunci-kunci sah yang diizinkan: API_KEY resmi, Merchant Code, Member ID, atau Custom Secret di DB
+  const validKeys = new Set();
+  if (env.API_KEY) validKeys.add(env.API_KEY.trim());
+  if (env.MERCHANT_CODE) validKeys.add(env.MERCHANT_CODE.trim());
+  if (env.MEMBER_ID) validKeys.add(env.MEMBER_ID.trim());
+
+  if (env.DB) {
+    const customRow = await env.DB.prepare("SELECT value FROM config WHERE key = 'api_secret'").first();
+    if (customRow && customRow.value) {
+      validKeys.add(customRow.value.trim());
+    }
+  }
+
+  // Jika bot lain tidak mengirimkan key
+  if (!keyParam) {
+    return {
+      valid: false,
+      message: "Secret Key / API Key wajib disertakan (?key=... atau Header X-API-Key)"
+    };
+  }
+
+  if (!validKeys.has(keyParam)) {
+    return {
+      valid: false,
+      message: "Secret Key / API Key tidak valid. Cek kunci Anda di Telegram @qiospay2bot via perintah /api"
+    };
+  }
+
+  return { valid: true, key: keyParam };
+}
+
 // Private API untuk dicek detikan oleh bot lain tanpa kena rate limit Qiospay
-async function handleGetMutasi(url, env, corsHeaders) {
+async function handleGetMutasi(request, url, env, corsHeaders) {
   if (!env.DB) {
     return new Response(JSON.stringify({ error: "Database not configured" }), { status: 500, headers: corsHeaders });
   }
 
-  const refid = url.searchParams.get("refid");
-  const amount = url.searchParams.get("amount");
+  const auth = await validateApiKey(request, url, env);
+  if (!auth.valid) {
+    return new Response(JSON.stringify({
+      status: "error",
+      message: auth.message
+    }), {
+      status: 401,
+      headers: { ...corsHeaders, "Content-Type": "application/json" }
+    });
+  }
+
+  const refid = url.searchParams.get("refid") || url.searchParams.get("ref_id") || url.searchParams.get("trx_id") || url.searchParams.get("trxid");
+  const amountParam = url.searchParams.get("amount") || url.searchParams.get("nominal") || url.searchParams.get("total");
+  const amount = amountParam ? parseInt(amountParam.replace(/[^0-9]/g, "")) : null;
   const limit = Math.min(parseInt(url.searchParams.get("limit") || "10"), 100);
 
   let query = "SELECT * FROM mutations";
@@ -472,9 +527,9 @@ async function handleGetMutasi(url, env, corsHeaders) {
   if (refid) {
     query += " WHERE refid = ?";
     params.push(refid);
-  } else if (amount) {
+  } else if (amount && !isNaN(amount)) {
     query += " WHERE amount = ?";
-    params.push(parseInt(amount));
+    params.push(amount);
   }
 
   query += " ORDER BY id DESC LIMIT ?";
@@ -482,10 +537,26 @@ async function handleGetMutasi(url, env, corsHeaders) {
 
   const { results } = await env.DB.prepare(query).bind(...params).all();
 
+  // Format data agar kompatibel dengan berbagai bot PPOB / gateway
+  const formattedData = (results || []).map(r => ({
+    id: r.id,
+    refid: r.refid,
+    amount: r.amount,
+    nominal: r.amount,
+    buyer_name: r.buyer_name,
+    issuer: r.issuer,
+    brand: r.issuer,
+    balance: r.balance,
+    type: r.type || "CR",
+    status: "SUCCESS",
+    date: r.date_str,
+    created_at: r.created_at
+  }));
+
   return new Response(JSON.stringify({
     status: "success",
-    count: results.length,
-    data: results
+    count: formattedData.length,
+    data: formattedData
   }), {
     status: 200,
     headers: { ...corsHeaders, "Content-Type": "application/json" }
@@ -655,10 +726,21 @@ async function handleGenerateQrisApi(request, url, env, corsHeaders) {
   }
 }
 
-async function handleCheckQrisInvoiceApi(url, env, corsHeaders) {
-  const trxId = url.searchParams.get("trx_id");
+async function handleCheckQrisInvoiceApi(request, url, env, corsHeaders) {
+  const auth = await validateApiKey(request, url, env);
+  if (!auth.valid) {
+    return new Response(JSON.stringify({
+      status: "error",
+      message: auth.message
+    }), {
+      status: 401,
+      headers: { ...corsHeaders, "Content-Type": "application/json" }
+    });
+  }
+
+  const trxId = url.searchParams.get("trx_id") || url.searchParams.get("trxid") || url.searchParams.get("invoice") || url.searchParams.get("id") || url.searchParams.get("refid");
   if (!trxId) {
-    return new Response(JSON.stringify({ error: "Parameter trx_id wajib diisi" }), {
+    return new Response(JSON.stringify({ error: "Parameter trx_id wajib diisi (?trx_id=INV...)" }), {
       status: 400,
       headers: { ...corsHeaders, "Content-Type": "application/json" }
     });
@@ -1089,7 +1171,8 @@ async function handleTelegramWebhook(request, env, ctx) {
       `• <code>/tarikwallet</code> — Tarik saldo QiosPay ke DANA penampung\n` +
       `• <code>/mutasi [limit]</code> — Lihat daftar mutasi QRIS masuk terkini\n` +
       `• <code>/h2h [limit]</code> — Lihat riwayat eksekusi H2H ke E-Wallet\n` +
-      `• <code>/qris [nominal]</code> — Generate QRIS dinamis langsung\n\n` +
+      `• <code>/qris [nominal]</code> — Generate QRIS dinamis langsung\n` +
+      `• <code>/api</code> — Panduan Private API & Secret Key untuk bot lain\n\n` +
       `<b>👥 Manajemen Administrator:</b>\n` +
       `• <code>/addadmin &lt;id&gt; [username]</code> — Tambah admin baru\n` +
       `• <code>/deladmin &lt;id&gt;</code> — Hapus admin\n` +
@@ -1114,7 +1197,10 @@ async function handleTelegramWebhook(request, env, ctx) {
           { text: "📤 Riwayat H2H", callback_data: "cb:h2h" }
         ],
         [
-          { text: "👥 Daftar Admin", callback_data: "cb:listadmin" },
+          { text: "🔌 API untuk Bot Lain", callback_data: "cb:api_info" },
+          { text: "👥 Daftar Admin", callback_data: "cb:listadmin" }
+        ],
+        [
           { text: "🌐 Web Dashboard", url: dashUrl }
         ]
       ]
@@ -1383,6 +1469,49 @@ async function handleTelegramWebhook(request, env, ctx) {
     });
 
     await sendTelegramMessage(env.BOT_TOKEN, chatId, adminMsg);
+    return new Response("OK");
+  }
+
+  // 14. Command /api & /apikey (Panduan Private API & Secret Key untuk Bot Lain)
+  if (text === "/api" || text === "/apikey") {
+    let customKey = "mansur";
+    if (env.DB) {
+      const row = await env.DB.prepare("SELECT value FROM config WHERE key = 'api_secret'").first();
+      if (row && row.value) customKey = row.value;
+    }
+
+    const host = "https://qiospay-automation.mansyurj168.workers.dev";
+    const apiMsg = `🌐 <b>PANDUAN PRIVATE API QRIS (UNTUK BOT LAIN)</b>\n\n` +
+      `⚡ <i>API ini berjalan di Cloudflare Edge D1, merespon dalam 10-30ms, bebas limit, dan aman dicek detikan oleh bot lain.</i>\n\n` +
+      `🔑 <b>Pilihan Secret Key Anda:</b>\n` +
+      `• Kunci Pendek: <code>${customKey}</code>\n` +
+      `• Merchant Code: <code>${env.MERCHANT_CODE || "QP038266"}</code>\n` +
+      `• User ID: <code>${env.MEMBER_ID || "mansur"}</code>\n\n` +
+      `🔗 <b>Contoh Pemanggilan URL (GET):</b>\n\n` +
+      `1️⃣ <b>Cek Mutasi per Nominal:</b>\n` +
+      `<code>${host}/api/qris/mutasi?key=${customKey}&nominal=10231</code>\n\n` +
+      `2️⃣ <b>Cek Mutasi per Ref ID:</b>\n` +
+      `<code>${host}/api/qris/mutasi?key=${customKey}&refid=231695940439</code>\n\n` +
+      `3️⃣ <b>Cek Tagihan Dinamis Kode Unik:</b>\n` +
+      `<code>${host}/api/qris/check?key=${customKey}&trx_id=INV12345</code>\n\n` +
+      `4️⃣ <b>Generate QRIS Dinamis via URL:</b>\n` +
+      `<code>${host}/api/qris/generate?key=${customKey}&amount=10000</code>\n\n` +
+      `💡 <i>Gunakan perintah <code>/setkey &lt;kunci_baru&gt;</code> untuk mengganti secret key sesuai keinginan Anda.</i>`;
+
+    await sendTelegramMessage(env.BOT_TOKEN, chatId, apiMsg);
+    return new Response("OK");
+  }
+
+  // 15. Command /setkey <kunci_baru> (Ubah Secret Key untuk Bot Lain)
+  if (text.startsWith("/setkey")) {
+    const newKey = text.replace("/setkey", "").trim();
+    if (!newKey) {
+      await sendTelegramMessage(env.BOT_TOKEN, chatId, "⚠️ Format: <code>/setkey rahasia123</code>");
+      return new Response("OK");
+    }
+    await env.DB.prepare("INSERT INTO config (key, value) VALUES ('api_secret', ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value")
+      .bind(newKey).run();
+    await sendTelegramMessage(env.BOT_TOKEN, chatId, `✅ <b>Secret Key API Diperbarui!</b>\n\nSecret key baru: <code>${newKey}</code>\n\n<i>Kunci ini sekarang langsung aktif untuk otentikasi bot lain.</i>`);
     return new Response("OK");
   }
 
@@ -1728,6 +1857,43 @@ async function handleCallbackQuery(cb, env) {
       text += `${i + 1}. ${h.product} -> <code>${h.dest}</code> [<b>${h.status}</b>]\n`;
     });
     await sendTelegramMessage(env.BOT_TOKEN, chatId, text || "Belum ada transaksi H2H.");
+  }
+
+  // 12.A Info API untuk Bot Lain
+  else if (data === "cb:api_info") {
+    let customKey = "mansur";
+    if (env.DB) {
+      const row = await env.DB.prepare("SELECT value FROM config WHERE key = 'api_secret'").first();
+      if (row && row.value) customKey = row.value;
+    }
+
+    const host = "https://qiospay-automation.mansyurj168.workers.dev";
+    const apiMsg = `🌐 <b>PANDUAN PRIVATE API QRIS (UNTUK BOT LAIN)</b>\n\n` +
+      `⚡ <i>API ini berjalan di Cloudflare Edge D1, merespon dalam 10-30ms, bebas limit, dan aman dicek detikan oleh bot lain.</i>\n\n` +
+      `🔑 <b>Pilihan Secret Key Anda:</b>\n` +
+      `• Kunci Pendek: <code>${customKey}</code>\n` +
+      `• Merchant Code: <code>${env.MERCHANT_CODE || "QP038266"}</code>\n` +
+      `• User ID: <code>${env.MEMBER_ID || "mansur"}</code>\n\n` +
+      `🔗 <b>Contoh Pemanggilan URL (GET):</b>\n\n` +
+      `1️⃣ <b>Cek Mutasi per Nominal:</b>\n` +
+      `<code>${host}/api/qris/mutasi?key=${customKey}&nominal=10231</code>\n\n` +
+      `2️⃣ <b>Cek Mutasi per Ref ID:</b>\n` +
+      `<code>${host}/api/qris/mutasi?key=${customKey}&refid=231695940439</code>\n\n` +
+      `3️⃣ <b>Cek Tagihan Dinamis Kode Unik:</b>\n` +
+      `<code>${host}/api/qris/check?key=${customKey}&trx_id=INV12345</code>\n\n` +
+      `4️⃣ <b>Generate QRIS Dinamis via URL:</b>\n` +
+      `<code>${host}/api/qris/generate?key=${customKey}&amount=10000</code>\n\n` +
+      `💡 <i>Gunakan perintah <code>/setkey &lt;kunci_baru&gt;</code> di chat untuk mengganti secret key.</i>`;
+
+    const kb = {
+      inline_keyboard: [[{ text: "🔙 Menu Utama", callback_data: "cb:menu_utama" }]]
+    };
+
+    if (messageId) {
+      await editTelegramMessage(env.BOT_TOKEN, chatId, messageId, apiMsg, kb);
+    } else {
+      await sendTelegramMessage(env.BOT_TOKEN, chatId, apiMsg, kb);
+    }
   }
 
   // 12. Daftar Admin
