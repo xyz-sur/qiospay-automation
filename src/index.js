@@ -274,8 +274,11 @@ async function handleQrisCallback(request, env, ctx) {
       ctx.waitUntil(broadcastToAllAdmins(env, msg));
     }
 
-    // Dual-Callback: Forward langsung ke Google Apps Script Bang Mansur
-    if (env.DUAL_CALLBACK_URL) {
+    // Dual-Callback: Forward ke Google Apps Script (Hanya jika bukan berasal dari GAS agar tidak terjadi infinite loop)
+    const reqUserAgent = (request.headers.get("user-agent") || "").toLowerCase();
+    const isFromGas = reqUserAgent.includes("google") || reqUserAgent.includes("appengine") || payload._from_gas === true;
+
+    if (env.DUAL_CALLBACK_URL && !isFromGas) {
       ctx.waitUntil(
         fetch(env.DUAL_CALLBACK_URL, {
           method: "POST",
