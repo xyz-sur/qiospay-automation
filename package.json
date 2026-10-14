@@ -1,0 +1,23 @@
+{
+  "name": "qiospay-automation",
+  "version": "1.0.0",
+  "description": "Serverless Qiospay QRIS Auto-Withdrawal & Mutation Engine powered by Cloudflare Workers and D1 Database",
+  "main": "src/index.js",
+  "scripts": {
+    "deploy": "wrangler deploy",
+    "dev": "wrangler dev"
+  },
+  "keywords": [
+    "qiospay",
+    "qris",
+    "cloudflare-workers",
+    "cloudflare-d1",
+    "otomax",
+    "h2h"
+  ],
+  "author": "Xyz Sur",
+  "license": "MIT",
+  "devDependencies": {
+    "wrangler": "^4.150.0"
+  }
+}

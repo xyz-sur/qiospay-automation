@@ -1,0 +1,18 @@
+name = "qiospay-automation"
+main = "src/index.js"
+compatibility_date = "2026-10-01"
+
+[triggers]
+crons = ["0 */12 * * *"]
+
+[[d1_databases]]
+binding = "DB"
+database_name = "qiospay_automation_db"
+database_id = "2571e827-896c-4ce3-a016-c0d100de0806"
+
+[vars]
+ADMIN_ID = "682723201"
+MERCHANT_CODE = "QP038266"
+MEMBER_ID = "mansur"
+H2H_URL = "https://qiospay.id/api/h2h/trx"
+DUAL_CALLBACK_URL = "https://script.google.com/macros/s/AKfycbwv_PsvBYFpcLtH_ugV7RzGDr7ZSrNn108szJeLnpLBAzLEEhpNzWjVl47NDpJPDE_adg/exec"
