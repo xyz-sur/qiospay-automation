@@ -78,9 +78,21 @@ export default {
     }
 
     try {
-      // 1. Webhook Callback QRIS dari Qiospay
-      if (path === "/api/callback/qris" && request.method === "POST") {
-        return await handleQrisCallback(request, env, ctx);
+      // 1. Webhook Callback QRIS & H2H dari Qiospay
+      if (path === "/api/callback/qris" || path === "/api/callback/h2h") {
+        if (request.method === "GET") {
+          return new Response(JSON.stringify({
+            status: "active",
+            message: "QiosPay Webhook Endpoint is ACTIVE and ready to receive callbacks",
+            forwarding_to: env.DUAL_CALLBACK_URL || "Not configured"
+          }), {
+            status: 200,
+            headers: { ...corsHeaders, "Content-Type": "application/json" }
+          });
+        }
+        if (request.method === "POST") {
+          return await handleQrisCallback(request, env, ctx);
+        }
       }
 
       // 2. Private Mutasi API (Bebas limit untuk bot lain)
@@ -188,14 +200,51 @@ async function getAdminUser(env, userId) {
 
 async function handleQrisCallback(request, env, ctx) {
   try {
-    const payload = await request.json();
-    console.log("📥 Received QRIS Callback:", JSON.stringify(payload));
+    let payload = {};
+    const contentType = request.headers.get("content-type") || "";
+
+    if (contentType.includes("application/json")) {
+      try {
+        payload = await request.json();
+      } catch (e) {
+        const raw = await request.text();
+        try { payload = JSON.parse(raw); } catch (_) { payload = { raw }; }
+      }
+    } else if (contentType.includes("form") || contentType.includes("urlencoded")) {
+      try {
+        const formData = await request.formData();
+        for (const [key, val] of formData.entries()) {
+          payload[key] = val;
+        }
+      } catch (e) {
+        const raw = await request.text();
+        const params = new URLSearchParams(raw);
+        for (const [key, val] of params.entries()) {
+          payload[key] = val;
+        }
+      }
+    } else {
+      const raw = await request.text();
+      try {
+        payload = JSON.parse(raw);
+      } catch (_) {
+        const params = new URLSearchParams(raw);
+        let hasParams = false;
+        for (const [key, val] of params.entries()) {
+          payload[key] = val;
+          hasParams = true;
+        }
+        if (!hasParams) payload = { raw_text: raw };
+      }
+    }
+
+    console.log("📥 Received Webhook Callback:", JSON.stringify(payload));
 
     const data = payload.data || payload;
-    const refid = String(data.refid || data.issuer_reff || "MUT_" + Date.now());
+    const refid = String(data.refid || data.issuer_reff || data.ref_id || "MUT_" + Date.now());
     const amount = parseInt(data.amount || 0);
-    const buyerName = data.name || data.buyer_name || "Pelanggan QRIS";
-    const issuer = String(data.issuer || data.brand_name || "-");
+    const buyerName = data.name || data.buyer_name || data.buyer_reff || "Pelanggan QRIS";
+    const issuer = String(data.issuer || data.brand_name || "QIOSPAY_WEBHOOK");
     const balance = parseInt(data.balance || 0);
     const dateStr = data.time || data.date || new Date().toISOString();
 
@@ -206,34 +255,49 @@ async function handleQrisCallback(request, env, ctx) {
          ON CONFLICT(refid) DO UPDATE SET balance = excluded.balance`
       ).bind(refid, amount, buyerName, issuer, balance, dateStr, JSON.stringify(payload)).run();
 
-      await env.DB.prepare(
-        "INSERT INTO config (key, value) VALUES ('qris_balance', ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value"
-      ).bind(String(balance)).run();
+      if (balance > 0) {
+        await env.DB.prepare(
+          "INSERT INTO config (key, value) VALUES ('qris_balance', ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value"
+        ).bind(String(balance)).run();
+        await env.DB.prepare(
+          "INSERT INTO config (key, value) VALUES ('qiospay_app_balance', ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value"
+        ).bind(String(balance)).run();
+      }
     }
 
     if (env.BOT_TOKEN && env.DB) {
-      const msg = `💰 <b>DANA QRIS MASUK!</b>\n\n` +
+      const msg = `💰 <b>DANA MASUK (WEBHOOK QIOSPAY)!</b>\n\n` +
         `💵 <b>Nominal:</b> <code>Rp ${amount.toLocaleString('id-ID')}</code>\n` +
         `👤 <b>Pengirim:</b> <code>${escapeHtml(buyerName)}</code>\n` +
         `🏦 <b>Issuer:</b> <code>${issuer}</code>\n` +
-        `💳 <b>Saldo QRIS Terkini:</b> <code>Rp ${balance.toLocaleString('id-ID')}</code>\n` +
+        `💳 <b>Saldo Terkini:</b> <code>Rp ${balance.toLocaleString('id-ID')}</code>\n` +
         `🆔 <b>Ref ID:</b> <code>${refid}</code>\n` +
         `🕒 <b>Waktu:</b> <code>${dateStr}</code>`;
 
       ctx.waitUntil(broadcastToAllAdmins(env, msg));
     }
 
+    // Dual-Callback: Forward langsung ke Google Apps Script Bang Mansur
     if (env.DUAL_CALLBACK_URL) {
       ctx.waitUntil(
         fetch(env.DUAL_CALLBACK_URL, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: { 
+            "Content-Type": "application/json",
+            "User-Agent": "QiosPay-DualCallback-Worker/1.0"
+          },
           body: JSON.stringify(payload)
-        }).catch(e => console.warn("Dual Callback Error:", e.message))
+        }).then(async r => {
+          console.log(`[DualCallback] Forwarded to GAS successfully (HTTP ${r.status})`);
+        }).catch(e => console.warn("[DualCallback] Error forwarding to GAS:", e.message))
       );
     }
 
-    return new Response(JSON.stringify({ status: "accept", message: "Mutation recorded successfully" }), {
+    return new Response(JSON.stringify({
+      status: "accept",
+      message: "Callback processed and forwarded successfully",
+      refid: refid
+    }), {
       status: 200,
       headers: { "Content-Type": "application/json" }
     });
