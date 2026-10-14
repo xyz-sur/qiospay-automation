@@ -259,9 +259,6 @@ async function handleQrisCallback(request, env, ctx) {
         await env.DB.prepare(
           "INSERT INTO config (key, value) VALUES ('qris_balance', ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value"
         ).bind(String(balance)).run();
-        await env.DB.prepare(
-          "INSERT INTO config (key, value) VALUES ('qiospay_app_balance', ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value"
-        ).bind(String(balance)).run();
       }
     }
 
@@ -437,11 +434,8 @@ async function syncQrisBalance(env) {
         newMutationsCount++;
       }
 
-      // Update qris_balance & update qiospay_app_balance agar mencerminkan saldo yang siap dicairkan
+      // Update qris_balance saja (jangan timpa qiospay_app_balance)
       await env.DB.prepare("INSERT INTO config (key, value) VALUES ('qris_balance', ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value")
-        .bind(String(qrisBalance)).run();
-
-      await env.DB.prepare("INSERT INTO config (key, value) VALUES ('qiospay_app_balance', ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value")
         .bind(String(qrisBalance)).run();
     }
   } catch (e) {
@@ -952,7 +946,22 @@ async function handleTelegramWebhook(request, env, ctx) {
     return new Response("OK");
   }
 
-  // 10. Command /autoon & /autooff
+  // 10. Command /setsaldo <nominal> (Koreksi Saldo Real Aplikasi QiosPay Manual)
+  if (text.startsWith("/setsaldo")) {
+    const rawVal = text.replace("/setsaldo", "").trim().replace(/[^0-9]/g, "");
+    if (!rawVal) {
+      await sendTelegramMessage(env.BOT_TOKEN, chatId, "⚠️ Format: <code>/setsaldo 50000</code>\n(Gunakan untuk menyelaraskan saldo aplikasi Qiospay sebelum ada transaksi H2H)");
+      return new Response("OK");
+    }
+    const valNum = parseInt(rawVal);
+    await env.DB.prepare("INSERT INTO config (key, value) VALUES ('qiospay_app_balance', ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value")
+      .bind(String(valNum)).run();
+
+    await sendTelegramMessage(env.BOT_TOKEN, chatId, `💼 <b>Saldo Aplikasi QiosPay Diperbarui!</b>\n\nSaldo aplikasi saat ini disetel ke: <code>Rp ${valNum.toLocaleString('id-ID')}</code>\n\n<i>Catatan: Saldo ini akan otomatis tersinkronisasi ke nilai riil server saat transaksi H2H pertama berhasil dieksekusi.</i>`);
+    return new Response("OK");
+  }
+
+  // 11. Command /autoon & /autooff
   if (text === "/autoon") {
     await env.DB.prepare("UPDATE config SET value = '1' WHERE key = 'auto_wd_enabled'").run();
     await sendTelegramMessage(env.BOT_TOKEN, chatId, "✅ Auto-Withdraw 12 jam telah <b>DIAKTIFKAN</b>.");
