@@ -7,15 +7,18 @@
 // KATALOG LENGKAP E-WALLET RESMI H2H QIOSPAY (BERDASARKAN JSON RESMI BANG MANSUR: https://qiospay.id/harga_h2h/json?id=0f15813d0455b27)
 const EWALLET_CATALOG = {
   dana: {
-    name: "DANA VIP H2H (Admin Rp 60)",
+    name: "DANA H2H (VIP Admin Rp 60 & Diskon)",
     icon: "🔷",
     products: [
       { code: "DP1", name: "DANA 1.000 VIP", price: 1060, max: 1560 },
       { code: "DP2", name: "DANA 2.000 VIP", price: 2060, max: 2560 },
       { code: "DP5", name: "DANA 5.000 VIP", price: 5060, max: 5560 },
-      { code: "DP10", name: "DANA 10.000 VIP", price: 10060, max: 10560 },
-      { code: "DP20", name: "DANA 20.000 VIP", price: 20060, max: 20560 },
-      { code: "DP50", name: "DANA 50.000 VIP", price: 50060, max: 50560 },
+      { code: "DNP10", name: "DANA 10.000 Diskon (Modal Rp 9.610)", price: 9610, max: 10110 },
+      { code: "DP10", name: "DANA 10.000 VIP (Modal Rp 10.060)", price: 10060, max: 10560 },
+      { code: "DNP20", name: "DANA 20.000 Diskon (Modal Rp 19.610)", price: 19610, max: 20110 },
+      { code: "DP20", name: "DANA 20.000 VIP (Modal Rp 20.060)", price: 20060, max: 20560 },
+      { code: "DNP50", name: "DANA 50.000 Diskon (Modal Rp 49.610)", price: 49610, max: 50110 },
+      { code: "DP50", name: "DANA 50.000 VIP (Modal Rp 50.060)", price: 50060, max: 50560 },
       { code: "DP100", name: "DANA 100.000 VIP", price: 100060, max: 100560 }
     ]
   },
@@ -130,9 +133,14 @@ export default {
         return await handleGetMutasi(url, env, corsHeaders);
       }
 
-      // 3. Dynamic QRIS Generator API
+      // 3. Dynamic QRIS Generator API (Dengan Kode Unik & Validasi 3 Menit + 1 Menit Grace Period)
       if (path === "/api/qris/generate" && (request.method === "GET" || request.method === "POST")) {
         return await handleGenerateQrisApi(request, url, env, corsHeaders);
+      }
+
+      // 3.B Check Status Tagihan QRIS Dinamis API
+      if (path === "/api/qris/check" && request.method === "GET") {
+        return await handleCheckQrisInvoiceApi(url, env, corsHeaders);
       }
 
       // 4. Webhook Bot Telegram (@qiospay2bot)
@@ -292,14 +300,55 @@ async function handleQrisCallback(request, env, ctx) {
       }
     }
 
+    // Cek kecocokan dengan Tagihan QRIS Dinamis (Kode Unik) dalam window toleransi 4 menit (3 menit user + 1 menit grace period)
+    let matchedInvoice = null;
+    if (env.DB && amount > 0) {
+      const nowMs = Date.now();
+      matchedInvoice = await env.DB.prepare(
+        "SELECT * FROM qris_invoices WHERE status = 'PENDING' AND nominal_total = ? AND grace_expires_at >= ? ORDER BY id DESC LIMIT 1"
+      ).bind(amount, nowMs).first();
+
+      if (matchedInvoice) {
+        await env.DB.prepare(
+          "UPDATE qris_invoices SET status = 'PAID', paid_at = ?, paid_refid = ?, buyer_name = ? WHERE id = ?"
+        ).bind(nowMs, refid, buyerName, matchedInvoice.id).run();
+      }
+    }
+
     if (env.BOT_TOKEN && env.DB) {
-      const msg = `💰 <b>DANA MASUK (WEBHOOK QIOSPAY)!</b>\n\n` +
-        `💵 <b>Nominal:</b> <code>Rp ${amount.toLocaleString('id-ID')}</code>\n` +
-        `👤 <b>Pengirim:</b> <code>${escapeHtml(buyerName)}</code>\n` +
-        `🏦 <b>Issuer:</b> <code>${issuer}</code>\n` +
-        `💳 <b>Saldo Terkini:</b> <code>Rp ${balance.toLocaleString('id-ID')}</code>\n` +
-        `🆔 <b>Ref ID:</b> <code>${refid}</code>\n` +
-        `🕒 <b>Waktu:</b> <code>${dateStr}</code>`;
+      let msg = "";
+      if (matchedInvoice) {
+        msg = `🎉 <b>PEMBAYARAN QRIS DINAMIS TELAH DIBAYAR OLEH USER!</b>\n\n` +
+          `🆔 <b>No. Tagihan:</b> <code>${matchedInvoice.trx_id}</code>\n` +
+          `💵 <b>Nominal Pokok:</b> <code>Rp ${matchedInvoice.nominal_base.toLocaleString('id-ID')}</code>\n` +
+          `🔢 <b>Kode Unik:</b> <code>Rp ${matchedInvoice.unique_code}</code>\n` +
+          `💰 <b>Total Diterima:</b> <code>Rp ${amount.toLocaleString('id-ID')}</code>\n` +
+          `👤 <b>Nama Pengirim:</b> <code>${escapeHtml(buyerName)}</code>\n` +
+          `🏦 <b>Issuer/Bank:</b> <code>${issuer}</code>\n` +
+          `💳 <b>Saldo QRIS Terkini:</b> <code>Rp ${balance.toLocaleString('id-ID')}</code>\n` +
+          `🆔 <b>Ref ID:</b> <code>${refid}</code>\n` +
+          `🕒 <b>Waktu:</b> <code>${dateStr}</code>\n\n` +
+          `✅ <i>Status: Sukses Lunas & Terverifikasi Otomatis (Aman dalam batas 3 menit + grace period 1 menit)!</i>`;
+
+        // Jika tagihan dibuat oleh chat_id pengguna tertentu, kirim notifikasi langsung juga ke pembeli
+        if (matchedInvoice.chat_id && String(matchedInvoice.chat_id) !== String(env.ADMIN_ID)) {
+          const userNotify = `✅ <b>PEMBAYARAN QRIS BERHASIL DITERIMA!</b>\n\n` +
+            `🆔 <b>No. Tagihan:</b> <code>${matchedInvoice.trx_id}</code>\n` +
+            `💰 <b>Total Dibayar:</b> <code>Rp ${amount.toLocaleString('id-ID')}</code>\n` +
+            `👤 <b>Pengirim:</b> <code>${escapeHtml(buyerName)}</code>\n` +
+            `🕒 <b>Waktu:</b> <code>${dateStr}</code>\n\n` +
+            `<i>Terima kasih! Pembayaran QRIS Anda telah lunas dan terverifikasi secara otomatis oleh sistem.</i>`;
+          ctx.waitUntil(sendTelegramMessage(env.BOT_TOKEN, matchedInvoice.chat_id, userNotify));
+        }
+      } else {
+        msg = `💰 <b>DANA MASUK (WEBHOOK QIOSPAY)!</b>\n\n` +
+          `💵 <b>Nominal:</b> <code>Rp ${amount.toLocaleString('id-ID')}</code>\n` +
+          `👤 <b>Pengirim:</b> <code>${escapeHtml(buyerName)}</code>\n` +
+          `🏦 <b>Issuer:</b> <code>${issuer}</code>\n` +
+          `💳 <b>Saldo Terkini:</b> <code>Rp ${balance.toLocaleString('id-ID')}</code>\n` +
+          `🆔 <b>Ref ID:</b> <code>${refid}</code>\n` +
+          `🕒 <b>Waktu:</b> <code>${dateStr}</code>`;
+      }
 
       ctx.waitUntil(broadcastToAllAdmins(env, msg));
     }
@@ -484,8 +533,96 @@ function generateDynamicQris(staticQr, amount) {
   };
 }
 
+// Helper: Buat Tagihan QRIS Dinamis dengan Kode Unik & Validasi 3 Menit + Grace Period 1 Menit
+async function createUniqueQrisInvoice(env, baseAmount, userId = null, chatId = null) {
+  const nominalBase = parseInt(baseAmount);
+  if (isNaN(nominalBase) || nominalBase <= 0) {
+    throw new Error("Nominal harus berupa angka lebih besar dari 0");
+  }
+
+  const now = Date.now();
+  // 1. Bersihkan invoice pending yang sudah lewat dari grace period (4 menit)
+  if (env.DB) {
+    await env.DB.prepare(
+      "UPDATE qris_invoices SET status = 'EXPIRED' WHERE status = 'PENDING' AND grace_expires_at < ?"
+    ).bind(now).run();
+  }
+
+  // 2. Kumpulkan nominal_total yang sedang aktif (pending) agar kode unik tidak bentrok
+  const activeTotals = new Set();
+  if (env.DB) {
+    const rows = await env.DB.prepare(
+      "SELECT nominal_total FROM qris_invoices WHERE status = 'PENDING' AND grace_expires_at >= ?"
+    ).bind(now).all();
+    for (const r of (rows.results || [])) {
+      activeTotals.add(Number(r.nominal_total));
+    }
+  }
+
+  // 3. Pilih kode unik acak (10 - 499) yang tidak bentrok dengan nominal_base yang sama
+  let uniqueCode = 0;
+  let nominalTotal = nominalBase;
+  for (let attempt = 0; attempt < 50; attempt++) {
+    const candidate = Math.floor(Math.random() * 490) + 10; // 10 s/d 499
+    const testTotal = nominalBase + candidate;
+    if (!activeTotals.has(testTotal)) {
+      uniqueCode = candidate;
+      nominalTotal = testTotal;
+      break;
+    }
+  }
+
+  if (uniqueCode === 0) {
+    uniqueCode = Math.floor(Math.random() * 900) + 100;
+    nominalTotal = nominalBase + uniqueCode;
+  }
+
+  const staticQr = env.QRIS_STRING || "00020101021126670016COM.NOBUBANK.WWW01189360050300000907180214804083792887370303UMI51440014ID.CO.QRIS.WWW0215ID20254684996570303UMI5204653353033605802ID5925Premium In Aja Payment Qp6007CILACAP61055321162070703A01630499E8";
+  const qrData = generateDynamicQris(staticQr, nominalTotal);
+
+  const trxId = `INV${Date.now().toString().slice(-6)}${Math.floor(Math.random() * 90 + 10)}`;
+  const userExpiresAt = now + (3 * 60 * 1000);   // 3 Menit (User Expiration)
+  const graceExpiresAt = now + (4 * 60 * 1000);  // 4 Menit (Background Grace Period: 3 Menit + 1 Menit Toleransi Bank)
+
+  if (env.DB) {
+    await env.DB.prepare(
+      `INSERT INTO qris_invoices (trx_id, nominal_base, unique_code, nominal_total, qris_string, qr_image_url, user_id, chat_id, status, created_at, user_expires_at, grace_expires_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'PENDING', ?, ?, ?)`
+    ).bind(
+      trxId,
+      nominalBase,
+      uniqueCode,
+      nominalTotal,
+      qrData.qris_string,
+      qrData.qr_image_url,
+      userId ? String(userId) : null,
+      chatId ? String(chatId) : null,
+      now,
+      userExpiresAt,
+      graceExpiresAt
+    ).run();
+  }
+
+  return {
+    trx_id: trxId,
+    nominal_base: nominalBase,
+    unique_code: uniqueCode,
+    nominal_total: nominalTotal,
+    qris_string: qrData.qris_string,
+    qr_image_url: qrData.qr_image_url,
+    user_expires_at: userExpiresAt,
+    grace_expires_at: graceExpiresAt,
+    user_expires_in_seconds: 180,
+    created_at: now
+  };
+}
+
 async function handleGenerateQrisApi(request, url, env, corsHeaders) {
   let amount = url.searchParams.get("amount");
+  const useUnique = url.searchParams.get("unique") !== "false";
+  const userId = url.searchParams.get("user_id");
+  const chatId = url.searchParams.get("chat_id");
+
   if (request.method === "POST") {
     try {
       const body = await request.json();
@@ -493,12 +630,80 @@ async function handleGenerateQrisApi(request, url, env, corsHeaders) {
     } catch (_) {}
   }
 
-  const staticQr = env.QRIS_STRING || "00020101021126670016COM.NOBUBANK.WWW01189360050300000907180214804083792887370303UMI51440014ID.CO.QRIS.WWW0215ID20254684996570303UMI5204653353033605802ID5925Premium In Aja Payment Qp6007CILACAP61055321162070703A01630499E8";
-  const result = generateDynamicQris(staticQr, amount);
+  const amtNum = parseInt(amount || 0);
+  if (!amtNum || amtNum <= 0) {
+    const staticQr = env.QRIS_STRING || "00020101021126670016COM.NOBUBANK.WWW01189360050300000907180214804083792887370303UMI51440014ID.CO.QRIS.WWW0215ID20254684996570303UMI5204653353033605802ID5925Premium In Aja Payment Qp6007CILACAP61055321162070703A01630499E8";
+    return new Response(JSON.stringify({
+      status: "success",
+      data: { qris_string: staticQr, amount: 0, is_static: true }
+    }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+  }
+
+  if (useUnique) {
+    const inv = await createUniqueQrisInvoice(env, amtNum, userId, chatId);
+    return new Response(JSON.stringify({
+      status: "success",
+      data: inv
+    }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+  } else {
+    const staticQr = env.QRIS_STRING || "00020101021126670016COM.NOBUBANK.WWW01189360050300000907180214804083792887370303UMI51440014ID.CO.QRIS.WWW0215ID20254684996570303UMI5204653353033605802ID5925Premium In Aja Payment Qp6007CILACAP61055321162070703A01630499E8";
+    const result = generateDynamicQris(staticQr, amtNum);
+    return new Response(JSON.stringify({
+      status: "success",
+      data: result
+    }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+  }
+}
+
+async function handleCheckQrisInvoiceApi(url, env, corsHeaders) {
+  const trxId = url.searchParams.get("trx_id");
+  if (!trxId) {
+    return new Response(JSON.stringify({ error: "Parameter trx_id wajib diisi" }), {
+      status: 400,
+      headers: { ...corsHeaders, "Content-Type": "application/json" }
+    });
+  }
+
+  if (!env.DB) {
+    return new Response(JSON.stringify({ error: "Database D1 tidak tersedia" }), {
+      status: 500,
+      headers: { ...corsHeaders, "Content-Type": "application/json" }
+    });
+  }
+
+  const inv = await env.DB.prepare("SELECT * FROM qris_invoices WHERE trx_id = ?").bind(trxId).first();
+  if (!inv) {
+    return new Response(JSON.stringify({ status: "not_found", message: "Tagihan tidak ditemukan" }), {
+      status: 404,
+      headers: { ...corsHeaders, "Content-Type": "application/json" }
+    });
+  }
+
+  const now = Date.now();
+  let currentStatus = inv.status;
+  if (currentStatus === "PENDING" && now > inv.grace_expires_at) {
+    currentStatus = "EXPIRED";
+    await env.DB.prepare("UPDATE qris_invoices SET status = 'EXPIRED' WHERE id = ?").bind(inv.id).run();
+  }
+
+  const remSeconds = currentStatus === "PENDING" ? Math.max(0, Math.floor((inv.user_expires_at - now) / 1000)) : 0;
 
   return new Response(JSON.stringify({
     status: "success",
-    data: result
+    data: {
+      trx_id: inv.trx_id,
+      nominal_base: inv.nominal_base,
+      unique_code: inv.unique_code,
+      nominal_total: inv.nominal_total,
+      status: currentStatus,
+      is_paid: currentStatus === "PAID",
+      is_expired: currentStatus === "EXPIRED" || (currentStatus === "PENDING" && now > inv.user_expires_at),
+      remaining_seconds: remSeconds,
+      paid_at: inv.paid_at,
+      paid_refid: inv.paid_refid,
+      buyer_name: inv.buyer_name,
+      created_at: inv.created_at
+    }
   }), {
     status: 200,
     headers: { ...corsHeaders, "Content-Type": "application/json" }
@@ -1028,23 +1233,73 @@ async function handleTelegramWebhook(request, env, ctx) {
     return new Response("OK");
   }
 
-  // 9. Command /qris [nominal]
+  // 9. Command /qris [nominal] (QRIS Dinamis dengan Kode Unik & Validasi 3 Menit)
   if (text.startsWith("/qris")) {
     const parts = text.split(/\s+/);
     const amount = parts[1] ? parseInt(parts[1].replace(/[^0-9]/g, "")) : 0;
 
-    const staticQr = env.QRIS_STRING || "00020101021126670016COM.NOBUBANK.WWW01189360050300000907180214804083792887370303UMI51440014ID.CO.QRIS.WWW0215ID20254684996570303UMI5204653353033605802ID5925Premium In Aja Payment Qp6007CILACAP61055321162070703A01630499E8";
-    const qrData = generateDynamicQris(staticQr, amount);
+    if (amount <= 0) {
+      const qrisPrompt = `💳 <b>BUAT QRIS DINAMIS DENGAN KODE UNIK:</b>\n\n` +
+        `Sistem akan otomatis menambahkan kode unik acak dan memvalidasi pembayaran Anda dalam waktu <b>3 menit</b> (dengan toleransi proses perbankan di background).\n\n` +
+        `Silakan pilih nominal cepat di bawah atau ketik manual:\n` +
+        `👉 <code>/qris 10000</code>\n` +
+        `👉 <code>/qris 25000</code>\n` +
+        `👉 <code>/qris 50000</code>`;
 
-    const caption = `💳 <b>QRIS PEMBAYARAN ${amount > 0 ? "DINAMIS" : "STATIS"}</b>\n\n` +
-      `💵 <b>Nominal:</b> <code>${amount > 0 ? "Rp " + amount.toLocaleString('id-ID') : "Bebas Masukkan Nominal"}</code>\n` +
-      `🏷️ <b>Merchant:</b> <code>Premium In Aja Payment</code>\n\n` +
-      `📋 <b>String QRIS (1-Tap Copy):</b>\n<code>${qrData.qris_string}</code>`;
+      const kb = {
+        inline_keyboard: [
+          [
+            { text: "Rp 5.000", callback_data: "cb:gen_qris:5000" },
+            { text: "Rp 10.000", callback_data: "cb:gen_qris:10000" },
+            { text: "Rp 20.000", callback_data: "cb:gen_qris:20000" }
+          ],
+          [
+            { text: "Rp 50.000", callback_data: "cb:gen_qris:50000" },
+            { text: "Rp 100.000", callback_data: "cb:gen_qris:100000" },
+            { text: "Rp 250.000", callback_data: "cb:gen_qris:250000" }
+          ],
+          [{ text: "🔙 Menu Utama", callback_data: "cb:menu_utama" }]
+        ]
+      };
 
-    if (qrData.qr_image_url) {
-      await sendTelegramPhoto(env.BOT_TOKEN, chatId, qrData.qr_image_url, caption);
-    } else {
-      await sendTelegramMessage(env.BOT_TOKEN, chatId, caption);
+      await sendTelegramMessage(env.BOT_TOKEN, chatId, qrisPrompt, kb);
+      return new Response("OK");
+    }
+
+    try {
+      const inv = await createUniqueQrisInvoice(env, amount, user.id, chatId);
+      const expDate = new Date(inv.user_expires_at + (7 * 3600 * 1000)); // WIB (+7)
+      const expTimeStr = expDate.toISOString().slice(11, 19);
+
+      const caption = `💳 <b>TAGIHAN QRIS DINAMIS (KODE UNIK)</b>\n\n` +
+        `🆔 <b>No. Tagihan:</b> <code>${inv.trx_id}</code>\n` +
+        `💵 <b>Nominal Pokok:</b> <code>Rp ${inv.nominal_base.toLocaleString('id-ID')}</code>\n` +
+        `🔢 <b>Kode Unik:</b> <code>Rp ${inv.unique_code}</code>\n` +
+        `💰 <b>TOTAL HARUS DIBAYAR:</b>\n` +
+        `👉 <b><code>Rp ${inv.nominal_total.toLocaleString('id-ID')}</code></b> 👈\n\n` +
+        `⚠️ <b>PANDUAN PEMBAYARAN:</b>\n` +
+        `• Wajib transfer <b>PERSIS</b> <code>Rp ${inv.nominal_total.toLocaleString('id-ID')}</code> sampai digit terakhir.\n` +
+        `• Sistem akan <b>otomatis memvalidasi</b> pembayaran Anda.\n` +
+        `⏳ <b>Batas Waktu:</b> <b>3 MENIT</b> (Hingga ${expTimeStr} WIB)\n` +
+        `<i>(Jika lewat 3 menit belum dibayar, QRIS otomatis kedaluwarsa).</i>\n\n` +
+        `📋 <b>String QRIS (1-Tap Copy):</b>\n<code>${inv.qris_string}</code>`;
+
+      const kb = {
+        inline_keyboard: [
+          [
+            { text: "🔄 Cek Status Pembayaran", callback_data: `cb:check_inv:${inv.trx_id}` },
+            { text: "❌ Batalkan Tagihan", callback_data: `cb:cancel_inv:${inv.trx_id}` }
+          ]
+        ]
+      };
+
+      if (inv.qr_image_url) {
+        await sendTelegramPhoto(env.BOT_TOKEN, chatId, inv.qr_image_url, caption, kb);
+      } else {
+        await sendTelegramMessage(env.BOT_TOKEN, chatId, caption, kb);
+      }
+    } catch (err) {
+      await sendTelegramMessage(env.BOT_TOKEN, chatId, `❌ Gagal membuat QRIS: ${err.message}`);
     }
     return new Response("OK");
   }
@@ -1484,22 +1739,127 @@ async function handleCallbackQuery(cb, env) {
     await sendTelegramMessage(env.BOT_TOKEN, chatId, text);
   }
 
-  // 13. QRIS Menu
+  // 13. QRIS Menu (Pilih Nominal Cepat & Kode Unik)
   else if (data === "cb:qris_menu") {
-    const qrisInfo = `💳 <b>FITUR GENERATE QRIS DINAMIS:</b>\n\n` +
-      `Untuk generate QRIS dengan nominal tertentu, ketik di chat:\n` +
-      `👉 <code>/qris 5000</code>\n` +
-      `👉 <code>/qris 50000</code>\n\n` +
-      `<i>Bot akan langsung membuat string QRIS dan gambar QR Code siap scan!</i>`;
+    const qrisPrompt = `💳 <b>BUAT QRIS DINAMIS DENGAN KODE UNIK:</b>\n\n` +
+      `Sistem akan otomatis menambahkan kode unik acak untuk memvalidasi pembayaran Anda dalam waktu <b>3 menit</b> (dengan toleransi proses perbankan 1 menit di background).\n\n` +
+      `Silakan pilih nominal cepat di bawah atau ketik manual (contoh: <code>/qris 15000</code>):`;
 
     const kb = {
-      inline_keyboard: [[{ text: "🔙 Menu Utama", callback_data: "cb:menu_utama" }]]
+      inline_keyboard: [
+        [
+          { text: "Rp 5.000", callback_data: "cb:gen_qris:5000" },
+          { text: "Rp 10.000", callback_data: "cb:gen_qris:10000" },
+          { text: "Rp 20.000", callback_data: "cb:gen_qris:20000" }
+        ],
+        [
+          { text: "Rp 50.000", callback_data: "cb:gen_qris:50000" },
+          { text: "Rp 100.000", callback_data: "cb:gen_qris:100000" },
+          { text: "Rp 250.000", callback_data: "cb:gen_qris:250000" }
+        ],
+        [{ text: "🔙 Menu Utama", callback_data: "cb:menu_utama" }]
+      ]
     };
 
     if (messageId) {
-      await editTelegramMessage(env.BOT_TOKEN, chatId, messageId, qrisInfo, kb);
+      await editTelegramMessage(env.BOT_TOKEN, chatId, messageId, qrisPrompt, kb);
     } else {
-      await sendTelegramMessage(env.BOT_TOKEN, chatId, qrisInfo, kb);
+      await sendTelegramMessage(env.BOT_TOKEN, chatId, qrisPrompt, kb);
+    }
+  }
+
+  // 14. Action Generate QRIS dari Tombol Nominal Cepat
+  else if (data.startsWith("cb:gen_qris:")) {
+    const amtStr = data.replace("cb:gen_qris:", "");
+    const amtNum = parseInt(amtStr) || 10000;
+
+    try {
+      const inv = await createUniqueQrisInvoice(env, amtNum, user.id, chatId);
+      const expDate = new Date(inv.user_expires_at + (7 * 3600 * 1000)); // WIB (+7)
+      const expTimeStr = expDate.toISOString().slice(11, 19);
+
+      const caption = `💳 <b>TAGIHAN QRIS DINAMIS (KODE UNIK)</b>\n\n` +
+        `🆔 <b>No. Tagihan:</b> <code>${inv.trx_id}</code>\n` +
+        `💵 <b>Nominal Pokok:</b> <code>Rp ${inv.nominal_base.toLocaleString('id-ID')}</code>\n` +
+        `🔢 <b>Kode Unik:</b> <code>Rp ${inv.unique_code}</code>\n` +
+        `💰 <b>TOTAL HARUS DIBAYAR:</b>\n` +
+        `👉 <b><code>Rp ${inv.nominal_total.toLocaleString('id-ID')}</code></b> 👈\n\n` +
+        `⚠️ <b>PANDUAN PEMBAYARAN:</b>\n` +
+        `• Wajib transfer <b>PERSIS</b> <code>Rp ${inv.nominal_total.toLocaleString('id-ID')}</code> sampai digit terakhir.\n` +
+        `• Sistem akan <b>otomatis memvalidasi</b> pembayaran Anda.\n` +
+        `⏳ <b>Batas Waktu:</b> <b>3 MENIT</b> (Hingga ${expTimeStr} WIB)\n` +
+        `<i>(Jika lewat 3 menit belum dibayar, QRIS otomatis kedaluwarsa).</i>\n\n` +
+        `📋 <b>String QRIS (1-Tap Copy):</b>\n<code>${inv.qris_string}</code>`;
+
+      const kb = {
+        inline_keyboard: [
+          [
+            { text: "🔄 Cek Status Pembayaran", callback_data: `cb:check_inv:${inv.trx_id}` },
+            { text: "❌ Batalkan Tagihan", callback_data: `cb:cancel_inv:${inv.trx_id}` }
+          ]
+        ]
+      };
+
+      if (inv.qr_image_url) {
+        await sendTelegramPhoto(env.BOT_TOKEN, chatId, inv.qr_image_url, caption, kb);
+      } else {
+        await sendTelegramMessage(env.BOT_TOKEN, chatId, caption, kb);
+      }
+    } catch (err) {
+      await sendTelegramMessage(env.BOT_TOKEN, chatId, `❌ Gagal membuat QRIS: ${err.message}`);
+    }
+  }
+
+  // 15. Action Cek Status Tagihan QRIS Dinamis
+  else if (data.startsWith("cb:check_inv:")) {
+    const trxId = data.replace("cb:check_inv:", "");
+    const inv = await env.DB.prepare("SELECT * FROM qris_invoices WHERE trx_id = ?").bind(trxId).first();
+    if (!inv) {
+      await answerCallbackQuery(env.BOT_TOKEN, callbackQuery.id, "Tagihan tidak ditemukan.");
+      return new Response("OK");
+    }
+
+    const now = Date.now();
+    if (inv.status === "PAID") {
+      const paidMsg = `✅ <b>TAGIHAN INI TELAH LUNAS!</b>\n\n` +
+        `🆔 <b>Invoice:</b> <code>${inv.trx_id}</code>\n` +
+        `💰 <b>Total Dibayar:</b> <code>Rp ${inv.nominal_total.toLocaleString('id-ID')}</code>\n` +
+        `👤 <b>Pengirim:</b> <code>${escapeHtml(inv.buyer_name || "Pelanggan")}</code>\n` +
+        `🆔 <b>Ref ID:</b> <code>${inv.paid_refid || "-"}</code>\n\n` +
+        `<i>Status: Pembayaran telah berhasil diverifikasi otomatis oleh sistem!</i>`;
+      await answerCallbackQuery(env.BOT_TOKEN, callbackQuery.id, "Tagihan SUDAH LUNAS! ✅");
+      if (messageId) {
+        await editTelegramMessage(env.BOT_TOKEN, chatId, messageId, paidMsg, null);
+      }
+    } else if (inv.status === "EXPIRED" || now > inv.user_expires_at) {
+      const isGrace = now <= inv.grace_expires_at;
+      const expMsg = `❌ <b>TAGIHAN TELAH KEDALUWARSA (EXPIRED)!</b>\n\n` +
+        `🆔 <b>Invoice:</b> <code>${inv.trx_id}</code>\n` +
+        `💵 <b>Total Tagihan:</b> <code>Rp ${inv.nominal_total.toLocaleString('id-ID')}</code>\n\n` +
+        `⚠️ <i>Waktu pembayaran 3 menit telah berakhir. QRIS ini sudah tidak valid. Silakan buat tagihan baru.</i>` +
+        (isGrace ? `\n\n🕒 <i>(Sistem masih memantau proses mutasi bank selama 1 menit...)</i>` : "");
+
+      await answerCallbackQuery(env.BOT_TOKEN, callbackQuery.id, "Tagihan telah kedaluwarsa!");
+      if (messageId) {
+        await editTelegramMessage(env.BOT_TOKEN, chatId, messageId, expMsg, null);
+      }
+    } else {
+      const remSec = Math.max(0, Math.floor((inv.user_expires_at - now) / 1000));
+      const m = Math.floor(remSec / 60);
+      const s = remSec % 60;
+      const remStr = `${m}m ${s < 10 ? '0' : ''}${s}s`;
+
+      await answerCallbackQuery(env.BOT_TOKEN, callbackQuery.id, `⏳ Menunggu pembayaran. Sisa waktu: ${remStr}`);
+    }
+  }
+
+  // 16. Action Batalkan Tagihan QRIS Dinamis
+  else if (data.startsWith("cb:cancel_inv:")) {
+    const trxId = data.replace("cb:cancel_inv:", "");
+    await env.DB.prepare("UPDATE qris_invoices SET status = 'CANCELLED' WHERE trx_id = ?").bind(trxId).run();
+    await answerCallbackQuery(env.BOT_TOKEN, callbackQuery.id, "Tagihan berhasil dibatalkan.");
+    if (messageId) {
+      await editTelegramMessage(env.BOT_TOKEN, chatId, messageId, `🚫 <b>TAGIHAN DIBATALKAN</b>\n\nNo. Tagihan <code>${trxId}</code> telah dibatalkan oleh pengguna. QRIS tidak lagi berlaku.`, null);
     }
   }
 
@@ -2143,17 +2503,20 @@ async function editTelegramMessage(botToken, chatId, messageId, text, replyMarku
   }
 }
 
-async function sendTelegramPhoto(botToken, chatId, photoUrl, caption = "") {
+async function sendTelegramPhoto(botToken, chatId, photoUrl, caption = "", replyMarkup = null) {
   try {
+    const payload = {
+      chat_id: chatId,
+      photo: photoUrl,
+      caption: caption,
+      parse_mode: "HTML"
+    };
+    if (replyMarkup) payload.reply_markup = replyMarkup;
+
     return await fetch(`https://api.telegram.org/bot${botToken}/sendPhoto`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        chat_id: chatId,
-        photo: photoUrl,
-        caption: caption,
-        parse_mode: "HTML"
-      })
+      body: JSON.stringify(payload)
     });
   } catch (e) {
     console.error("Failed sending Telegram photo:", e);

@@ -56,3 +56,26 @@ CREATE TABLE IF NOT EXISTS otp_sessions (
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 CREATE INDEX IF NOT EXISTS idx_otp_token ON otp_sessions(token);
+
+-- 5. Tabel Tagihan QRIS Dinamis & Kode Unik (Auto-Validation 3 Menit + 1 Menit Grace Period)
+CREATE TABLE IF NOT EXISTS qris_invoices (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  trx_id TEXT UNIQUE,
+  nominal_base INTEGER,
+  unique_code INTEGER,
+  nominal_total INTEGER,
+  qris_string TEXT,
+  qr_image_url TEXT,
+  user_id TEXT,
+  chat_id TEXT,
+  status TEXT DEFAULT 'PENDING',
+  created_at INTEGER,
+  user_expires_at INTEGER,
+  grace_expires_at INTEGER,
+  paid_at INTEGER,
+  paid_refid TEXT,
+  buyer_name TEXT
+);
+CREATE INDEX IF NOT EXISTS idx_qris_inv_total ON qris_invoices(nominal_total);
+CREATE INDEX IF NOT EXISTS idx_qris_inv_status ON qris_invoices(status);
+CREATE INDEX IF NOT EXISTS idx_qris_inv_trx ON qris_invoices(trx_id);
