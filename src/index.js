@@ -538,7 +538,17 @@ async function handleGetMutasi(request, url, env, corsHeaders) {
   query += " ORDER BY id DESC LIMIT ?";
   params.push(limit);
 
-  const { results } = await env.DB.prepare(query).bind(...params).all();
+  let { results } = await env.DB.prepare(query).bind(...params).all();
+
+  // Jika mutasi spesifik (nominal/refid) dicari namun belum ada di D1 lokal,
+  // langsung fetch live realtime dari server Qiospay tanpa menunggu cron!
+  if ((!results || results.length === 0) && (amount || refid)) {
+    try {
+      await syncQrisBalance(env);
+      const retryRes = await env.DB.prepare(query).bind(...params).all();
+      results = retryRes.results || [];
+    } catch (_) {}
+  }
 
   // Format data agar kompatibel dengan berbagai bot PPOB / gateway
   const formattedData = (results || []).map(r => ({
