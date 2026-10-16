@@ -5,6 +5,7 @@
  */
 
 // KATALOG RESMI E-WALLET H2H (1 E-WALLET = 1 GRUP PRODUK TUNGGAL & TERMURAH)
+// KATALOG RESMI E-WALLET H2H LENGKAP DENGAN FEE TERMURAH
 const EWALLET_CATALOG = {
   dana: {
     name: "DANA",
@@ -14,10 +15,24 @@ const EWALLET_CATALOG = {
       { code: "DP2", name: "DANA 2.000", price: 2060, max: 2560 },
       { code: "DP5", name: "DANA 5.000", price: 5060, max: 5560 },
       { code: "DP10", name: "DANA 10.000", price: 10060, max: 10560 },
+      { code: "DP15", name: "DANA 15.000", price: 15060, max: 15560 },
       { code: "DP20", name: "DANA 20.000", price: 20060, max: 20560 },
       { code: "DP25", name: "DANA 25.000", price: 25060, max: 25560 },
+      { code: "DP30", name: "DANA 30.000", price: 30060, max: 30560 },
+      { code: "DP40", name: "DANA 40.000", price: 40060, max: 40560 },
       { code: "DP50", name: "DANA 50.000", price: 50060, max: 50560 },
-      { code: "DP100", name: "DANA 100.000", price: 100060, max: 100560 }
+      { code: "DP60", name: "DANA 60.000", price: 60060, max: 60560 },
+      { code: "DP70", name: "DANA 70.000", price: 70060, max: 70560 },
+      { code: "DP80", name: "DANA 80.000", price: 80060, max: 80560 },
+      { code: "DP90", name: "DANA 90.000", price: 90060, max: 90560 },
+      { code: "DP100", name: "DANA 100.000", price: 100060, max: 100560 },
+      { code: "DP125", name: "DANA 125.000", price: 125060, max: 125560 },
+      { code: "DP150", name: "DANA 150.000", price: 150060, max: 150560 },
+      { code: "DP200", name: "DANA 200.000", price: 200060, max: 200560 },
+      { code: "DP250", name: "DANA 250.000", price: 250060, max: 250560 },
+      { code: "DP300", name: "DANA 300.000", price: 300060, max: 300560 },
+      { code: "DP400", name: "DANA 400.000", price: 400060, max: 400560 },
+      { code: "DP500", name: "DANA 500.000", price: 500060, max: 500560 }
     ]
   },
   shopee: {
@@ -29,7 +44,11 @@ const EWALLET_CATALOG = {
       { code: "SPAY20", name: "ShopeePay 20.000", price: 20019, max: 20519 },
       { code: "SPAY25", name: "ShopeePay 25.000", price: 25019, max: 25519 },
       { code: "SPAY50", name: "ShopeePay 50.000", price: 50019, max: 50519 },
-      { code: "SPAY100", name: "ShopeePay 100.000", price: 100019, max: 100519 }
+      { code: "SPAY100", name: "ShopeePay 100.000", price: 100019, max: 100519 },
+      { code: "SPAY150", name: "ShopeePay 150.000", price: 150019, max: 150519 },
+      { code: "SPAY200", name: "ShopeePay 200.000", price: 200019, max: 200519 },
+      { code: "SPAY250", name: "ShopeePay 250.000", price: 250019, max: 250519 },
+      { code: "SPAY300", name: "ShopeePay 300.000", price: 300019, max: 300519 }
     ]
   },
   gopay: {
@@ -40,7 +59,11 @@ const EWALLET_CATALOG = {
       { code: "GOPAY15", name: "GoPay 15.000", price: 15460, max: 15960 },
       { code: "GOPAY20", name: "GoPay 20.000", price: 20460, max: 20960 },
       { code: "GOPAY25", name: "GoPay 25.000", price: 25460, max: 25960 },
-      { code: "GOPAY50", name: "GoPay 50.000", price: 50460, max: 50960 }
+      { code: "GOPAY50", name: "GoPay 50.000", price: 50460, max: 50960 },
+      { code: "GOPAY100", name: "GoPay 100.000", price: 100460, max: 100960 },
+      { code: "GOPAY150", name: "GoPay 150.000", price: 150885, max: 151385 },
+      { code: "GOPAY200", name: "GoPay 200.000", price: 200885, max: 201385 },
+      { code: "GOPAY300", name: "GoPay 300.000", price: 300885, max: 301385 }
     ]
   },
   ovo: {
@@ -48,11 +71,14 @@ const EWALLET_CATALOG = {
     icon: "🟣",
     products: [
       { code: "OVP10", name: "OVO 10.000", price: 9590, max: 10090 },
-      { code: "OVP15", name: "OVO 15.000", price: 14590, max: 15090 },
-      { code: "OVP20", name: "OVO 20.000", price: 19590, max: 20090 },
-      { code: "OVP25", name: "OVO 25.000", price: 24590, max: 25090 },
-      { code: "OVP50", name: "OVO 50.000", price: 49590, max: 50090 },
-      { code: "OVP100", name: "OVO 100.000", price: 99590, max: 100090 }
+      { code: "OVO20", name: "OVO 20.000", price: 19125, max: 19625 },
+      { code: "OVO25", name: "OVO 25.000", price: 24125, max: 24625 },
+      { code: "OVO50", name: "OVO 50.000", price: 49125, max: 49625 },
+      { code: "OVO100", name: "OVO 100.000", price: 99125, max: 99625 },
+      { code: "OVO150", name: "OVO 150.000", price: 149125, max: 149625 },
+      { code: "OVO200", name: "OVO 200.000", price: 199125, max: 199625 },
+      { code: "OVP250", name: "OVO 250.000", price: 249590, max: 250090 },
+      { code: "OVP300", name: "OVO 300.000", price: 299590, max: 300090 }
     ]
   },
   linkaja: {
@@ -63,10 +89,23 @@ const EWALLET_CATALOG = {
       { code: "LINK20", name: "LinkAja 20.000", price: 20110, max: 20610 },
       { code: "LINK25", name: "LinkAja 25.000", price: 25110, max: 25610 },
       { code: "LINK50", name: "LinkAja 50.000", price: 50110, max: 50610 },
-      { code: "LINK100", name: "LinkAja 100.000", price: 100110, max: 100610 }
+      { code: "LINK100", name: "LinkAja 100.000", price: 100110, max: 100610 },
+      { code: "LINK150", name: "LinkAja 150.000", price: 150110, max: 150610 },
+      { code: "LINK200", name: "LinkAja 200.000", price: 200110, max: 200610 }
     ]
   }
 };
+
+// AUTO-DETECT HELPER: Temukan produk terbesar yang saldonya mencukupi
+function findBestProductForBalance(walletKey, balance) {
+  const cat = EWALLET_CATALOG[walletKey] || EWALLET_CATALOG.dana;
+  const affordable = cat.products.filter(p => p.price <= balance);
+  if (affordable.length === 0) return null;
+  // Sort descending by price to get largest affordable product
+  affordable.sort((a, b) => b.price - a.price);
+  return { ...affordable[0], wallet: cat };
+}
+
 
 export default {
   // 1. HTTP REQUEST ROUTER
@@ -839,16 +878,28 @@ async function syncQrisBalance(env) {
         const bal = parseInt(m.balance || 0);
         const buyer = m.brand_name || "Pelanggan QRIS";
         const dt = m.date || new Date().toISOString();
+        const mutType = m.type || (buyer.toLowerCase().includes("pencairan") ? "DB" : "CR");
+
+        const existing = await env.DB.prepare("SELECT id FROM mutations WHERE refid = ?").bind(refid).first();
 
         await env.DB.prepare(
           `INSERT INTO mutations (refid, amount, buyer_name, issuer, balance, type, date_str, raw_payload)
-           VALUES (?, ?, ?, 'QRIS_API', ?, 'CR', ?, ?)
-           ON CONFLICT(refid) DO UPDATE SET balance = excluded.balance`
-        ).bind(refid, amt, buyer, bal, dt, JSON.stringify(m)).run();
+           VALUES (?, ?, ?, 'QRIS_API', ?, ?, ?, ?)
+           ON CONFLICT(refid) DO UPDATE SET balance = excluded.balance, type = excluded.type`
+        ).bind(refid, amt, buyer, bal, mutType, dt, JSON.stringify(m)).run();
+
+        // Jika ada mutasi Pencairan QRIS baru yang belum pernah tercatat, tambahkan otomatis ke qiospay_app_balance
+        if (!existing && mutType === "DB" && buyer.toLowerCase().includes("pencairan")) {
+          await env.DB.prepare(
+            "UPDATE config SET value = CAST(CAST(value AS INTEGER) + ? AS TEXT) WHERE key = 'qiospay_app_balance'"
+          ).bind(amt).run();
+          console.log(`[SyncQRIS] Auto-added settled QRIS amount Rp ${amt} to qiospay_app_balance`);
+        }
+
         newMutationsCount++;
       }
 
-      // Update qris_balance saja (jangan timpa qiospay_app_balance)
+      // Update qris_balance di config
       await env.DB.prepare("INSERT INTO config (key, value) VALUES ('qris_balance', ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value")
         .bind(String(qrisBalance)).run();
     }
@@ -864,9 +915,9 @@ async function syncQrisBalance(env) {
   return { qrisBalance, newMutationsCount };
 }
 
-// B. EKSEKUSI PENARIKAN SALDO QIOSPAY KE WALLET (H2H OTOMAX)
-async function executeAutoWithdrawal(env, triggerSource = "MANUAL") {
-  console.log(`[AutoWD] Execution started by ${triggerSource}`);
+// B. EKSEKUSI PENARIKAN SALDO QIOSPAY KE WALLET (H2H OTOMAX) DENGAN AUTO-DETECT & CUSTOM PRODUK
+async function executeAutoWithdrawal(env, triggerSource = "MANUAL", customProduct = null, customHargaMax = null) {
+  console.log(`[AutoWD] Execution started by ${triggerSource} (customProd: ${customProduct}, customMax: ${customHargaMax})`);
 
   if (!env.DB) {
     return { success: false, message: "DB binding missing" };
@@ -877,17 +928,17 @@ async function executeAutoWithdrawal(env, triggerSource = "MANUAL") {
   const cfg = {};
   for (const r of (configRows.results || [])) cfg[r.key] = r.value;
 
-  if (cfg.auto_wd_enabled !== "1" && triggerSource !== "MANUAL" && !triggerSource.startsWith("TELEGRAM_USER_") && !triggerSource.startsWith("BUTTON_")) {
+  if (cfg.auto_wd_enabled !== "1" && triggerSource !== "MANUAL" && !triggerSource.startsWith("TELEGRAM_USER_") && !triggerSource.startsWith("BUTTON_") && !triggerSource.startsWith("CONFIRMED_BUTTON_")) {
     console.log("[AutoWD] Skipped: Auto-WD disabled in settings");
     return { success: false, message: "Auto-WD disabled" };
   }
 
-  const targetProduct = cfg.target_product || "DP1";
+  const targetProduct = customProduct || cfg.target_product || "DP1";
   const destNumber = cfg.dana_dest || "083127060539";
-  const hargaMax = parseInt(cfg.harga_max || "1560");
+  const hargaMax = customHargaMax ? parseInt(customHargaMax) : parseInt(cfg.harga_max || "1560");
 
   if (!destNumber) {
-    const warn = "⚠️ [Auto-WD] Nomor Wallet penampung belum disetel! Gunakan perintah /setwallet untuk mengatur nomor tujuan.";
+    const warn = "⚠️ [Auto-WD] Nomor Wallet penampung belum disetel! Gunakan perintah /setnomor untuk mengatur nomor tujuan.";
     await broadcastToAllAdmins(env, warn);
     return { success: false, message: warn };
   }
@@ -905,11 +956,18 @@ async function executeAutoWithdrawal(env, triggerSource = "MANUAL") {
     await env.DB.prepare("UPDATE config SET value = ? WHERE key = 'last_wd_status'").bind(logMsg).run();
     await env.DB.prepare("UPDATE config SET value = ? WHERE key = 'last_wd_attempt'").bind(Date.now().toString()).run();
 
-    const tgMsg = `⏳ <b>[PENARIKAN KE WALLET DITANGGUHKAN]</b>\n\n` +
-      `💼 <b>Saldo Aplikasi QiosPay:</b> <code>Rp ${appBalance.toLocaleString('id-ID')}</code>\n` +
-      `💳 <b>Saldo Akun QRIS:</b> <code>Rp ${qrisBalance.toLocaleString('id-ID')}</code>\n` +
-      `📦 <b>Target Produk:</b> <code>${targetProduct}</code>\n` +
-      `💵 <b>Kebutuhan Saldo:</b> <code>Rp ${hargaMax.toLocaleString('id-ID')}</code>\n\n` +
+    const tgMsg = `⏳ <b>[PENARIKAN KE WALLET DITANGGUHKAN]</b>
+
+` +
+      `💼 <b>Saldo Aplikasi QiosPay:</b> <code>Rp ${appBalance.toLocaleString('id-ID')}</code>
+` +
+      `💳 <b>Saldo Akun QRIS:</b> <code>Rp ${qrisBalance.toLocaleString('id-ID')}</code>
+` +
+      `📦 <b>Target Produk:</b> <code>${targetProduct}</code>
+` +
+      `💵 <b>Kebutuhan Saldo:</b> <code>Rp ${hargaMax.toLocaleString('id-ID')}</code>
+
+` +
       `<i>Alasan: Saldo belum mencapai batas harga modal produk. Saldo tetap aman di akun untuk siklus berikutnya.</i>`;
     await broadcastToAllAdmins(env, tgMsg);
 
@@ -922,18 +980,25 @@ async function executeAutoWithdrawal(env, triggerSource = "MANUAL") {
   const password = env.MEMBER_PASSWORD || "";
 
   if (!pin || !password) {
-    const missingSecretMsg = `⚠️ <b>KREDENSIAL H2H BELUM LENGKAP</b>\n\n` +
-      `PIN Transaksi atau Password member QiosPay belum diatur di Cloudflare Worker Secret!\n\n` +
-      `<b>Langkah Aktivasi:</b>\n` +
-      `Simpan PIN dan Password akun QiosPay via CLI:\n` +
-      `<code>npx wrangler secret put MEMBER_PIN</code>\n` +
+    const missingSecretMsg = `⚠️ <b>KREDENSIAL H2H BELUM LENGKAP</b>
+
+` +
+      `PIN Transaksi atau Password member QiosPay belum diatur di Cloudflare Worker Secret!
+
+` +
+      `<b>Langkah Aktivasi:</b>
+` +
+      `Simpan PIN dan Password akun QiosPay via CLI:
+` +
+      `<code>npx wrangler secret put MEMBER_PIN</code>
+` +
       `<code>npx wrangler secret put MEMBER_PASSWORD</code>`;
 
     await broadcastToAllAdmins(env, missingSecretMsg);
     return { success: false, message: "Kredensial PIN/Password transaksi QiosPay belum disetel di secrets." };
   }
 
-  // 5. Eksekusi H2H Trx Pembelian E-Wallet (Via Bridge Server IPv4 103.125.37.38)
+  // 5. Eksekusi H2H Trx Pembelian E-Wallet (Via Bridge Server IPv4)
   const refID = `WD_${Date.now()}`;
   const h2hBaseUrl = env.H2H_URL || "https://qiosh2h.89id.eu.org/api/h2h/trx";
 
@@ -979,14 +1044,50 @@ async function executeAutoWithdrawal(env, triggerSource = "MANUAL") {
     await env.DB.prepare("UPDATE config SET value = ? WHERE key = 'last_wd_status'").bind(`${statusText}: ${rawResponse}`).run();
     await env.DB.prepare("UPDATE config SET value = ? WHERE key = 'last_wd_attempt'").bind(Date.now().toString()).run();
 
+    // Notifikasi khusus jika Invalid user (IP Whitelist Mismatch)
+    if (rawResponse.includes("Invalid user")) {
+      const bridgeIpRes = await fetch("https://api.ipify.org?format=json").catch(() => null);
+      const bridgeIpJson = bridgeIpRes ? await bridgeIpRes.json().catch(() => null) : null;
+      const currentIp = bridgeIpJson?.ip || "182.253.249.217";
+
+      const ipExplain = `⚠️ <b>H2H GAGAL: Invalid user (IP Whitelist Mismatch)</b>
+
+` +
+        `Server Qiospay menolak transaksi karena IP server pengirim belum terdaftar di whitelist.
+
+` +
+        `🌐 <b>IP Publik Server Saat Ini:</b> <code>${currentIp}</code>
+
+` +
+        `👉 <b>Solusi Cepat:</b>
+` +
+        `1. Buka <b>https://qiospay.id/mitra</b>
+` +
+        `2. Masuk ke menu <b>Integrasi Transaksi > Transaksi IP</b>
+` +
+        `3. Ganti IP Address menjadi: <code>${currentIp}</code> lalu simpan.
+` +
+        `4. Klik tombol ulangi penarikan di bawah!`;
+
+      await broadcastToAllAdmins(env, ipExplain);
+      return { success: false, message: `Invalid user: IP Server saat ini (${currentIp}) belum di-whitelist di Qiospay Mitra.`, raw: rawResponse, refID };
+    }
+
     // Notifikasi Telegram Realtime
     const emoji = isSuccess ? "✅" : "❌";
-    const tgMsg = `${emoji} <b>[EKSEKUSI PENARIKAN KE WALLET]</b>\n\n` +
-      `📦 <b>Produk:</b> <code>${targetProduct}</code>\n` +
-      `📱 <b>Nomor Tujuan:</b> <code>${destNumber}</code>\n` +
-      `🆔 <b>Ref ID:</b> <code>${refID}</code>\n` +
-      `📊 <b>Status:</b> <b>${statusText}</b>\n` +
-      `📝 <b>Respon Server:</b>\n<code>${escapeHtml(rawResponse)}</code>`;
+    const tgMsg = `${emoji} <b>[EKSEKUSI PENARIKAN KE WALLET]</b>
+
+` +
+      `📦 <b>Produk:</b> <code>${targetProduct}</code>
+` +
+      `📱 <b>Nomor Tujuan:</b> <code>${destNumber}</code>
+` +
+      `🆔 <b>Ref ID:</b> <code>${refID}</code>
+` +
+      `📊 <b>Status:</b> <b>${statusText}</b>
+` +
+      `📝 <b>Respon Server:</b>
+<code>${escapeHtml(rawResponse)}</code>`;
 
     await broadcastToAllAdmins(env, tgMsg);
 
@@ -995,16 +1096,6 @@ async function executeAutoWithdrawal(env, triggerSource = "MANUAL") {
     console.error("[AutoWD] Network error executing H2H:", err);
     return { success: false, error: err.message };
   }
-}
-
-// Formula: base64(sha1("OtomaX|memberID|product|dest|refID|pin|password"))
-async function generateOtomaXSignature(memberID, product, dest, refID, pin, password) {
-  const str = `OtomaX|${memberID.trim()}|${product.trim().toLowerCase()}|${dest.trim()}|${refID.trim()}|${pin.trim()}|${password.trim()}`;
-  const msgBuffer = new TextEncoder().encode(str);
-  const hashBuffer = await crypto.subtle.digest("SHA-1", msgBuffer);
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
-  const hex = hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
-  return btoa(hex);
 }
 
 // ============================================================================
@@ -1180,31 +1271,54 @@ async function handleTelegramWebhook(request, env, ctx) {
     return new Response("OK");
   }
 
-  // 2. Command /start & /help
+  // 2. Command /start & /help (DENGAN SINKRONISASI SALDO LIVE OTOMATIS)
   if (text === "/start" || text === "/help") {
+    // 1. Sinkronisasi saldo QRIS & cek mutasi live
+    await syncQrisBalance(env);
+
+    // 2. Ambil data terbaru dari D1
+    const configRows = await env.DB.prepare("SELECT key, value FROM config").all();
+    const cfg = {};
+    for (const r of (configRows.results || [])) cfg[r.key] = r.value;
+
+    const qrisBalance = parseInt(cfg.qris_balance || 0);
+    const appBalance = parseInt(cfg.qiospay_app_balance || 0);
+    const destNumber = cfg.dana_dest || "083127060539";
+    const targetProduct = cfg.target_product || "DP1";
+
+    // Auto-detect rekomendasi nominal terbesar untuk saldo saat ini
+    const bestProd = findBestProductForBalance("dana", appBalance);
+
     const roleBadge = admin.role === "owner" ? "👑 OWNER" : "🛡️ ADMIN";
-    const welcome = `🤖 <b>QIOSPAY AUTOMATION & DUAL ENGINE</b>\n` +
-      `Status: <b>${roleBadge}</b> (<code>${user.id}</code>)\n\n` +
-      `<b>⚡ Menu Operasional:</b>\n` +
-      `1️⃣ <b>Tarik QRIS ➔ QiosPay:</b> Pindahkan saldo mutasi QRIS ke akun QiosPay.\n` +
-      `2️⃣ <b>Tarik ke E-Wallet:</b> Eksekusi saldo QiosPay ke E-Wallet penampung.\n\n` +
-      `<b>📱 Perintah Cepat:</b>\n` +
-      `• <code>/status</code> — Cek saldo (QRIS & Aplikasi Qiospay) & status WD\n` +
-      `• <code>/tarikqris</code> — Tarik saldo QRIS ke QiosPay\n` +
-      `• <code>/wd</code> — Tarik saldo QiosPay ke E-Wallet\n` +
-      `• <code>/setnomor [no]</code> — Atur nomor HP E-Wallet penampung\n` +
-      `• <code>/setproduk</code> — Pilih produk & nominal E-Wallet\n` +
-      `• <code>/qris [nominal]</code> — Buat QRIS Dinamis (Kode Unik 3 Menit)\n` +
-      `• <code>/api</code> — Secret Key & panduan integrasi bot lain\n` +
-      `• <code>/setkey [kunci]</code> — Ganti Secret Key API tunggal\n\n` +
-      `<i>Gunakan tombol interaktif di bawah untuk navigasi cepat:</i>`;
+    const welcome = `🤖 <b>QIOSPAY AUTOMATION & DUAL ENGINE</b>
+` +
+      `Status: <b>${roleBadge}</b> (<code>${user.id}</code>)
+
+` +
+      `💼 <b>Saldo Aplikasi QiosPay:</b> <code>Rp ${appBalance.toLocaleString('id-ID')}</code>
+` +
+      `💳 <b>Saldo Akun QRIS:</b> <code>Rp ${qrisBalance.toLocaleString('id-ID')}</code>
+` +
+      `📱 <b>Nomor Penampung:</b> <code>${destNumber}</code>
+` +
+      (bestProd ? `🎯 <b>Auto-Detect WD:</b> <code>${bestProd.name}</code> (Rp ${bestProd.price.toLocaleString('id-ID')})
+
+` : "\n\n") +
+      `<b>⚡ Menu Operasional:</b>
+` +
+      `1️⃣ <b>Tarik QRIS ➔ QiosPay:</b> Pindahkan saldo mutasi QRIS ke akun QiosPay.
+` +
+      `2️⃣ <b>Tarik ke E-Wallet:</b> Eksekusi saldo QiosPay ke E-Wallet penampung.
+
+` +
+      `<i>Gunakan tombol di bawah untuk navigasi instan:</i>`;
 
     const dashUrl = `https://qiospay-automation.mansyurj168.workers.dev/?uid=${user.id}`;
     const inlineKeyboard = {
       inline_keyboard: [
         [
-          { text: "📊 Cek Dual Saldo", callback_data: "cb:status" },
-          { text: "⚡ Tarik ke E-Wallet", callback_data: "cb:prompt_tarik_wallet" }
+          { text: "📊 Refresh & Cek Saldo", callback_data: "cb:status" },
+          { text: "⚡ Tarik ke E-Wallet (Auto)", callback_data: "cb:prompt_tarik_wallet" }
         ],
         [
           { text: "🔄 Tarik QRIS ➔ QiosPay", callback_data: "cb:tarik_qris_settle" },
@@ -1212,7 +1326,7 @@ async function handleTelegramWebhook(request, env, ctx) {
         ],
         [
           { text: "📱 Set Nomor Tujuan", callback_data: "ew:input_phone" },
-          { text: "⚙️ Pilih Produk E-Wallet", callback_data: "ew:menu" }
+          { text: "⚙️ Pilih E-Wallet", callback_data: "ew:menu" }
         ],
         [
           { text: "📥 Mutasi QRIS", callback_data: "cb:mutasi" },
@@ -1232,8 +1346,9 @@ async function handleTelegramWebhook(request, env, ctx) {
     return new Response("OK");
   }
 
-  // 3. Command /status (DUAL SALDO: QRIS & APLIKASI QIOSPAY)
+  // 3. Command /status (DUAL SALDO: QRIS & APLIKASI QIOSPAY DENGAN CEK LIVE)
   if (text === "/status") {
+    await syncQrisBalance(env);
     await renderStatusMessage(env, chatId, user.id);
     return new Response("OK");
   }
@@ -1256,7 +1371,7 @@ async function handleTelegramWebhook(request, env, ctx) {
 
       const confirmMsg = `✅ <b>Nomor Tujuan E-Wallet Diperbarui!</b>\n\n` +
         `📱 <b>Nomor Aktif:</b> <code>${cleanPhone}</code>\n\n` +
-        `Silakan pilih produk E-Wallet penampung di bawah ini:`;
+        `Silakan pilih jenis E-Wallet penampung di bawah ini:`;
 
       await sendTelegramMessage(env.BOT_TOKEN, chatId, confirmMsg, renderWalletCategoryKeyboard());
       return new Response("OK");
@@ -1306,9 +1421,38 @@ async function handleTelegramWebhook(request, env, ctx) {
     return new Response("OK");
   }
 
-  // 6. Command /tarikwallet, /wd, /tarik (Konfirmasi Eksekusi ke E-Wallet)
-  if (text === "/tarikwallet" || text === "/wd" || text === "/tarik") {
-    await renderWithdrawConfirmPrompt(env, chatId);
+  // 6. Command /tarikwallet, /wd, /tarik (Konfirmasi Eksekusi ke E-Wallet dengan Auto-Detect & Custom Nominal)
+  if (text.startsWith("/tarikwallet") || text.startsWith("/wd") || text.startsWith("/tarik")) {
+    await syncQrisBalance(env);
+
+    const parts = text.split(/\s+/);
+    let targetWalletKey = null;
+
+    if (parts.length > 1) {
+      let targetNominal = 0;
+      for (let i = 1; i < parts.length; i++) {
+        const p = parts[i].toLowerCase();
+        if (["dana", "shopee", "gopay", "ovo", "linkaja"].includes(p)) {
+          targetWalletKey = p;
+        } else if (/^[0-9]+$/.test(p)) {
+          const num = parseInt(p);
+          if (num >= 1000) targetNominal = num;
+        }
+      }
+
+      if (targetNominal > 0) {
+        const cat = EWALLET_CATALOG[targetWalletKey || "dana"];
+        const matched = cat.products.find(p => p.name.includes(targetNominal.toLocaleString('id-ID')) || p.price === targetNominal) ||
+                        cat.products.filter(p => p.price <= targetNominal).pop();
+
+        if (matched) {
+          await env.DB.prepare("UPDATE config SET value = ? WHERE key = 'target_product'").bind(matched.code).run();
+          await env.DB.prepare("UPDATE config SET value = ? WHERE key = 'harga_max'").bind(String(matched.max)).run();
+        }
+      }
+    }
+
+    await renderWithdrawConfirmPrompt(env, chatId, null, targetWalletKey);
     return new Response("OK");
   }
 
@@ -1596,6 +1740,9 @@ async function renderStatusMessage(env, chatId, userId, messageId = null) {
   const qrisBalance = parseInt(cfg.qris_balance || lastMut?.balance || 0);
   const appBalance = parseInt(cfg.qiospay_app_balance || 0);
 
+  // Auto-detect produk terbaik yang bisa dibeli
+  const bestProd = findBestProductForBalance("dana", appBalance);
+
   const statusMsg = `📊 <b>STATUS AKUN & DUAL SALDO:</b>\n\n` +
     `💼 <b>Saldo Akun QiosPay:</b> <code>Rp ${appBalance.toLocaleString('id-ID')}</code>\n` +
     `💳 <b>Saldo Akun QRIS:</b> <code>Rp ${qrisBalance.toLocaleString('id-ID')}</code>\n` +
@@ -1604,24 +1751,26 @@ async function renderStatusMessage(env, chatId, userId, messageId = null) {
     `📱 <b>Nomor Penampung:</b> <code>${cfg.dana_dest || "083127060539"}</code>\n` +
     `📦 <b>Target Produk:</b> <code>${cfg.target_product || "DP1"}</code>\n` +
     `💵 <b>Batas Harga Maks:</b> <code>Rp ${parseInt(cfg.harga_max || 1560).toLocaleString('id-ID')}</code>\n` +
+    (bestProd ? `🎯 <b>Auto-Detect Nominal:</b> <code>${bestProd.name}</code> (Rp ${bestProd.price.toLocaleString('id-ID')})\n` : "") +
     `⚙️ <b>Auto-WD ke E-Wallet:</b> <b>${cfg.auto_wd_enabled === "1" ? "AKTIF ✅" : "NONAKTIF ❌"}</b>\n` +
     `🕒 <b>Status WD Terakhir:</b> <code>${cfg.last_wd_status || "-"}</code>\n` +
-    `✅ <b>Total WD Berhasil:</b> <code>${totalWd?.count || 0} kali</code>`;
+    `✅ <b>Total WD Berhasil:</b> <code>${totalWd?.count || 0} kali</code>\n\n` +
+    `<i>💡 Tip: Saldo otomatis dicek & disinkronkan secara live!</i>`;
 
   const dashUrl = `https://qiospay-automation.mansyurj168.workers.dev/?uid=${userId}`;
   const kb = {
     inline_keyboard: [
       [
-        { text: "⚡ Tarik ke E-Wallet", callback_data: "cb:prompt_tarik_wallet" },
+        { text: "⚡ Tarik ke E-Wallet (Auto)", callback_data: "cb:prompt_tarik_wallet" },
         { text: "🔄 Tarik QRIS ➔ QiosPay", callback_data: "cb:tarik_qris_settle" }
       ],
       [
         { text: "📱 Set Nomor Tujuan", callback_data: "ew:input_phone" },
-        { text: "⚙️ Pilih Produk E-Wallet", callback_data: "ew:menu" }
+        { text: "⚙️ Pilih E-Wallet & Nominal", callback_data: "ew:menu" }
       ],
       [
-        { text: "🔄 Refresh Status", callback_data: "cb:status" },
-        { text: "💳 Buat QRIS", callback_data: "cb:qris_menu" }
+        { text: "🔄 Refresh Status Live", callback_data: "cb:status" },
+        { text: "💳 Buat QRIS Dinamis", callback_data: "cb:qris_menu" }
       ],
       [
         { text: "🔑 Secret Key & API", callback_data: "cb:api_info" },
@@ -1640,32 +1789,66 @@ async function renderStatusMessage(env, chatId, userId, messageId = null) {
   }
 }
 
-async function renderWithdrawConfirmPrompt(env, chatId, messageId = null) {
+async function renderWithdrawConfirmPrompt(env, chatId, messageId = null, selectedWallet = null) {
   const configRows = await env.DB.prepare("SELECT key, value FROM config").all();
   const cfg = {};
   for (const r of (configRows.results || [])) cfg[r.key] = r.value;
 
-  const targetProduct = cfg.target_product || "DP1";
-  const destNumber = cfg.dana_dest || "083127060539";
-  const hargaMax = parseInt(cfg.harga_max || "1560");
   const appBalance = parseInt(cfg.qiospay_app_balance || "0");
+  const destNumber = cfg.dana_dest || "083127060539";
 
-  const promptText = `⚠️ <b>KONFIRMASI PENARIKAN SALDO H2H</b>\n\n` +
-    `Anda akan mengeksekusi penarikan saldo QiosPay ke E-Wallet tujuan dengan detail berikut:\n\n` +
-    `📦 <b>Target Produk:</b> <code>${targetProduct}</code>\n` +
-    `📱 <b>Nomor Tujuan:</b> <code>${destNumber}</code>\n` +
-    `💵 <b>Estimasi Biaya Maks:</b> <code>Rp ${hargaMax.toLocaleString('id-ID')}</code>\n` +
-    `💼 <b>Saldo Aplikasi Tersedia:</b> <code>Rp ${appBalance.toLocaleString('id-ID')}</code>\n\n` +
-    `<i>Apakah Anda yakin ingin mengeksekusi penarikan sekarang?</i>`;
+  let walletKey = selectedWallet;
+  if (!walletKey) {
+    const prod = cfg.target_product || "DP1";
+    if (prod.startsWith("SPAY") || prod.startsWith("QSPAY")) walletKey = "shopee";
+    else if (prod.startsWith("GOPAY") || prod.startsWith("GPY")) walletKey = "gopay";
+    else if (prod.startsWith("OVP") || prod.startsWith("OVO")) walletKey = "ovo";
+    else if (prod.startsWith("LINK") || prod.startsWith("QLINK")) walletKey = "linkaja";
+    else walletKey = "dana";
+  }
 
-  const kb = {
-    inline_keyboard: [
+  const cat = EWALLET_CATALOG[walletKey] || EWALLET_CATALOG.dana;
+  const bestProd = findBestProductForBalance(walletKey, appBalance);
+
+  let promptText = "";
+  let kb = { inline_keyboard: [] };
+
+  if (!bestProd) {
+    const minProd = cat.products[0];
+    promptText = `⚠️ <b>SALDO BELUM MENCUKUPI UNTUK PENARIKAN</b>\n\n` +
+      `💼 <b>Saldo Aplikasi QiosPay:</b> <code>Rp ${appBalance.toLocaleString('id-ID')}</code>\n` +
+      `📱 <b>Tujuan:</b> ${cat.icon} <b>${cat.name}</b> (<code>${destNumber}</code>)\n` +
+      `📦 <b>Nominal Terkecil:</b> <code>${minProd.name}</code> (Modal: <code>Rp ${minProd.price.toLocaleString('id-ID')}</code>)\n\n` +
+      `<i>Saldo Anda belum mencapai batas nominal terendah. Silakan lakukan pencairan saldo QRIS terlebih dahulu jika ada mutasi QRIS masuk.</i>`;
+
+    kb.inline_keyboard = [
+      [{ text: "🔄 Tarik QRIS ➔ QiosPay Dulu", callback_data: "cb:tarik_qris_settle" }],
+      [{ text: "🔄 Ganti E-Wallet Lain", callback_data: "ew:menu" }],
+      [{ text: "🔙 Menu Utama", callback_data: "cb:menu_utama" }]
+    ];
+  } else {
+    const sisa = appBalance - bestProd.price;
+    promptText = `🎯 <b>AUTO-DETECT PENARIKAN SALDO PINTAR</b>\n\n` +
+      `💼 <b>Saldo Aplikasi Tersedia:</b> <code>Rp ${appBalance.toLocaleString('id-ID')}</code>\n` +
+      `📱 <b>E-Wallet Tujuan:</b> ${cat.icon} <b>${cat.name}</b> (<code>${destNumber}</code>)\n\n` +
+      `💡 <b>Rekomendasi Nominal Maksimal:</b>\n` +
+      `👉 <b>${bestProd.name}</b> (Kode: <code>${bestProd.code}</code>)\n` +
+      `💵 <b>Harga Modal:</b> <code>Rp ${bestProd.price.toLocaleString('id-ID')}</code>\n` +
+      `💰 <b>Sisa Saldo Setelah Penarikan:</b> <code>Rp ${sisa.toLocaleString('id-ID')}</code>\n\n` +
+      `<i>Sistem otomatis memilih nominal terbesar yang mencukupi saldo Anda. Klik tombol di bawah untuk eksekusi sekarang:</i>`;
+
+    kb.inline_keyboard = [
+      [{ text: `⚡ Tarik Langsung: ${bestProd.name}`, callback_data: `cb:confirm_tarik_wallet:${bestProd.code}:${bestProd.max}` }],
       [
-        { text: "✅ YA, EKSEKUSI SEKARANG", callback_data: "cb:confirm_tarik_wallet" },
-        { text: "❌ BATALKAN", callback_data: "cb:status" }
+        { text: "📋 Pilih Nominal Lain", callback_data: `ew:cat:${walletKey}` },
+        { text: "🔄 Ganti E-Wallet", callback_data: "ew:menu" }
+      ],
+      [
+        { text: "📱 Set Nomor HP", callback_data: "ew:input_phone" },
+        { text: "🔙 Menu Utama", callback_data: "cb:menu_utama" }
       ]
-    ]
-  };
+    ];
+  }
 
   if (messageId) {
     await editTelegramMessage(env.BOT_TOKEN, chatId, messageId, promptText, kb);
@@ -1678,7 +1861,7 @@ function renderWalletCategoryKeyboard() {
   return {
     inline_keyboard: [
       [
-        { text: "🔷 DANA", callback_data: "ew:cat:dana" },
+        { text: "🔷 DANA (Fee Termurah)", callback_data: "ew:cat:dana" },
         { text: "🟠 ShopeePay", callback_data: "ew:cat:shopee" }
       ],
       [
@@ -1696,24 +1879,33 @@ function renderWalletCategoryKeyboard() {
   };
 }
 
-function renderProductNominalKeyboard(catKey) {
+function renderProductNominalKeyboard(catKey, currentBalance = 0) {
   const cat = EWALLET_CATALOG[catKey];
   if (!cat) return renderWalletCategoryKeyboard();
 
   const rows = [];
   cat.products.forEach(p => {
+    const isAffordable = (p.price <= currentBalance);
+    const badge = isAffordable ? "✅" : "🔒";
+    const statusNote = isAffordable ? "" : " (Kurang)";
+    const cbData = isAffordable 
+      ? `ew:set:${p.code}:${p.max}`
+      : `ew:insufficient:${p.code}:${p.price}`;
+
     rows.push([{
-      text: `${cat.icon} ${p.name} (Rp ${p.price.toLocaleString('id-ID')})`,
-      callback_data: `ew:set:${p.code}:${p.max}`
+      text: `${badge} ${p.name} — Rp ${p.price.toLocaleString('id-ID')}${statusNote}`,
+      callback_data: cbData
     }]);
   });
 
-  rows.push([{ text: "🔙 Pilih E-Wallet Lain", callback_data: "ew:menu" }]);
+  rows.push([
+    { text: "🎯 Rekomendasi Auto-Detect", callback_data: `cb:prompt_tarik_wallet:${catKey}` },
+    { text: "🔙 Pilih E-Wallet Lain", callback_data: "ew:menu" }
+  ]);
 
   return { inline_keyboard: rows };
 }
 
-// Handler Callback Query Tombol Inline
 async function handleCallbackQuery(cb, env) {
   const data = cb.data;
   const user = cb.from;
@@ -1771,9 +1963,11 @@ async function handleCallbackQuery(cb, env) {
     }
   }
 
-  // 2. Status Callback
+  // 2. Status Callback (CEK SALDO LIVE)
   else if (data === "cb:status") {
+    await syncQrisBalance(env);
     await renderStatusMessage(env, chatId, user.id, messageId);
+    await answerCallbackQuery(env.BOT_TOKEN, cb.id, "✅ Saldo disinkronkan secara live!");
   }
 
   // 3. Tombol 1: Tarik Saldo QRIS ke QiosPay (Settlement / Sync)
@@ -1803,18 +1997,25 @@ async function handleCallbackQuery(cb, env) {
     }
   }
 
-  // 4. Tombol 2: Tampilkan Konfirmasi Tarik QiosPay ke Wallet (YES/NO Prompt)
-  else if (data === "cb:prompt_tarik_wallet") {
-    await renderWithdrawConfirmPrompt(env, chatId, messageId);
+  // 4. Tombol 2: Tampilkan Konfirmasi Tarik QiosPay ke Wallet (Auto-Detect Saldo)
+  else if (data === "cb:prompt_tarik_wallet" || data.startsWith("cb:prompt_tarik_wallet:")) {
+    const parts = data.split(":");
+    const selWallet = parts[2] || null;
+    await syncQrisBalance(env);
+    await renderWithdrawConfirmPrompt(env, chatId, messageId, selWallet);
   }
 
-  // 5. Eksekusi Tarik Setelah Diklik "YES"
-  else if (data === "cb:confirm_tarik_wallet") {
+  // 5. Eksekusi Tarik Setelah Diklik "YES" atau Tombol Auto-Detect Langsung
+  else if (data.startsWith("cb:confirm_tarik_wallet")) {
+    const parts = data.split(":");
+    const customProd = parts[2] || null;
+    const customMax = parts[3] ? parseInt(parts[3]) : null;
+
     if (messageId) {
       await editTelegramMessage(env.BOT_TOKEN, chatId, messageId, "⏳ Sedang mengeksekusi penarikan H2H ke nomor tujuan...");
     }
 
-    const res = await executeAutoWithdrawal(env, `CONFIRMED_BUTTON_${user.id}`);
+    const res = await executeAutoWithdrawal(env, `CONFIRMED_BUTTON_${user.id}`, customProd, customMax);
     if (!res.success) {
       const errAlert = `⚠️ <b>Eksekusi H2H Gagal / Ditangguhkan:</b>\n\n${res.message || res.error}`;
       const kb = {
@@ -1848,15 +2049,27 @@ async function handleCallbackQuery(cb, env) {
     const catKey = data.replace("ew:cat:", "");
     const cat = EWALLET_CATALOG[catKey];
     if (cat) {
+      const cfgRow = await env.DB.prepare("SELECT value FROM config WHERE key = 'qiospay_app_balance'").first();
+      const curBal = parseInt(cfgRow?.value || "0");
+      const best = findBestProductForBalance(catKey, curBal);
+
       const catMsg = `${cat.icon} <b>PILIH NOMINAL ${cat.name.toUpperCase()} (H2H OTOMATIS)</b>\n\n` +
-        `Pilih paket nominal penarikan yang Anda inginkan:`;
+        `💼 <b>Saldo Aplikasi Anda:</b> <code>Rp ${curBal.toLocaleString('id-ID')}</code>\n` +
+        (best ? `💡 <b>Rekomendasi Auto-Detect:</b> <code>${best.name}</code> (Rp ${best.price.toLocaleString('id-ID')})\n\n` : `⚠️ <i>Saldo belum cukup untuk nominal ${cat.name}.</i>\n\n`) +
+        `<i>Pilih paket nominal penarikan yang Anda inginkan:</i>`;
 
       if (messageId) {
-        await editTelegramMessage(env.BOT_TOKEN, chatId, messageId, catMsg, renderProductNominalKeyboard(catKey));
+        await editTelegramMessage(env.BOT_TOKEN, chatId, messageId, catMsg, renderProductNominalKeyboard(catKey, curBal));
       } else {
-        await sendTelegramMessage(env.BOT_TOKEN, chatId, catMsg, renderProductNominalKeyboard(catKey));
+        await sendTelegramMessage(env.BOT_TOKEN, chatId, catMsg, renderProductNominalKeyboard(catKey, curBal));
       }
     }
+  }
+
+  // 7.B Notifikasi Saldo Kurang saat tombol produk terkunci ditekan
+  else if (data.startsWith("ew:insufficient:")) {
+    const [, , pCode, pPrice] = data.split(":");
+    await answerCallbackQuery(env.BOT_TOKEN, cb.id, `⚠️ Saldo Anda tidak mencukupi untuk ${pCode} (Harga: Rp ${parseInt(pPrice).toLocaleString('id-ID')})`);
   }
 
   // 8. Set Product & Harga Max via Inline Callback
@@ -1867,17 +2080,20 @@ async function handleCallbackQuery(cb, env) {
       await env.DB.prepare("UPDATE config SET value = ? WHERE key = 'harga_max'").bind(maxPrice).run();
 
       const lastDest = await env.DB.prepare("SELECT value FROM config WHERE key = 'dana_dest'").first();
+      const cfgRow = await env.DB.prepare("SELECT value FROM config WHERE key = 'qiospay_app_balance'").first();
+      const appBal = parseInt(cfgRow?.value || "0");
 
-      const successMsg = `✅ <b>PRODUK E-WALLET BERHASIL DIUBAH!</b>\n\n` +
+      const successMsg = `✅ <b>PRODUK BERHASIL DIPILIH: ${prodCode}</b>\n\n` +
         `📦 <b>Kode Produk:</b> <code>${prodCode}</code>\n` +
-        `💵 <b>Harga Maks Proteksi:</b> <code>Rp ${parseInt(maxPrice).toLocaleString('id-ID')}</code>\n` +
-        `📱 <b>Nomor Penampung:</b> <code>${lastDest?.value || "083127060539"}</code>\n\n` +
-        `<i>Sistem akan otomatis mengeksekusi produk ini saat penarikan saldo dilakukan.</i>`;
+        `💵 <b>Harga Maks:</b> <code>Rp ${parseInt(maxPrice).toLocaleString('id-ID')}</code>\n` +
+        `📱 <b>Nomor Penampung:</b> <code>${lastDest?.value || "083127060539"}</code>\n` +
+        `💼 <b>Saldo Aplikasi Anda:</b> <code>Rp ${appBal.toLocaleString('id-ID')}</code>\n\n` +
+        `<i>Apakah Anda ingin langsung mengeksekusi penarikan ini sekarang?</i>`;
 
       const kb = {
         inline_keyboard: [
           [
-            { text: "⚡ Tarik ke Wallet Sekarang", callback_data: "cb:prompt_tarik_wallet" },
+            { text: `⚡ Tarik ${prodCode} Sekarang`, callback_data: `cb:confirm_tarik_wallet:${prodCode}:${maxPrice}` },
             { text: "📊 Cek Status", callback_data: "cb:status" }
           ],
           [
@@ -2778,11 +2994,16 @@ async function editTelegramMessage(botToken, chatId, messageId, text, replyMarku
     };
     if (replyMarkup) payload.reply_markup = replyMarkup;
 
-    return await fetch(`https://api.telegram.org/bot${botToken}/editMessageText`, {
+    const res = await fetch(`https://api.telegram.org/bot${botToken}/editMessageText`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload)
     });
+    const resJson = await res.json().catch(() => null);
+    if (!res.ok && resJson?.description && !resJson.description.includes("message is not modified")) {
+      console.warn("Telegram editMessageText note:", resJson.description);
+    }
+    return res;
   } catch (e) {
     console.error("Failed editing Telegram message:", e);
   }
